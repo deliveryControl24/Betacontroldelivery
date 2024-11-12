@@ -1,0 +1,543 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Registro y Facturación de Pedidos</title>
+    <style>
+        body { 
+            font-family: 'Roboto', sans-serif; 
+            background-color: #f5f5f5; 
+            margin: 0; 
+            padding: 20px; 
+        }
+        h1, h2 { 
+            color: #333; 
+            text-align: center; 
+            margin-bottom: 10px; 
+        }
+        img.logo {
+            display: block;
+            margin: 0 auto 20px; /* Centrar y añadir margen inferior */
+            max-width: 100%; /* Asegurar que el logo no se salga de la pantalla */
+            height: auto; /* Mantener proporciones del logo */
+        }
+        form, .card, table {
+            width: 100%; 
+            max-width: 600px; 
+            margin: auto; 
+            background-color: #fff; 
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            margin-bottom: 20px;
+            box-sizing: border-box; /* Asegurar que el padding no afecte el tamaño total */
+        }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 10px; border: 1px solid #ddd; text-align: left; }
+        th { background-color: #f0f0f0; }
+        button { 
+            background-color: #6200ea; 
+            color: #fff; 
+            border: none; 
+            padding: 10px; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            width: 100%; 
+            transition: background-color 0.3s; 
+            margin-top: 10px; /* Espaciado entre botones */
+        }
+        button:hover { background-color: #3700b3; }
+        input, select, textarea { 
+            border: 1px solid #ccc; 
+            border-radius: 4px; 
+            padding: 10px; 
+            width: 100%; 
+            margin: 8px 0; 
+            box-sizing: border-box; 
+        }
+        .voucher {
+            padding: 20px; 
+            border: 1px solid #000; 
+            border-radius: 5px; 
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); 
+            margin: auto; 
+        }
+        @media (max-width: 600px) {
+            button { padding: 8px; } /* Ajustar el tamaño de los botones en pantallas pequeñas */
+            th, td { padding: 8px; } /* Ajustar el padding de las celdas en pantallas pequeñas */
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+
+<img src="logo.jpg" alt="Logo" class="logo"> <!-- Logo agregado aquí -->
+
+<h1>Sistema de Registro y Facturación de Pedidos</h1>
+<h2 id="currentDay"></h2>
+
+<!-- Formulario para registrar un nuevo pedido -->
+<form id="orderForm">
+    <h2>Registrar Nuevo Pedido</h2>
+    <label>Retiro: <input type="text" id="pickup" required></label>
+    <label>Lugar de Entrega: <input type="text" id="deliveryAddress"></label>
+    <label>Producto a Entregar: <input type="text" id="recipient"></label>
+    <label>Número de Cliente: <input type="text" id="customerNumber"></label>
+    <label>Efectivo (C$): <input type="number" id="cash" min="0" required></label>
+    <label>Tarifa: <input type="text" id="rate"></label>
+    <label>Nombre de Motorizado: 
+        <select id="motorizedSelect" required>
+            <option value="">Seleccione un Motorizado</option>
+        </select>
+    </label>
+    <label>Tipo de Pedido: 
+        <select id="orderType">
+            <option value="">Seleccione un tipo de pedido (opcional)</option>
+            <option value="normal">Pedidos Normales</option>
+            <option value="promotion">Pedidos en Promoción o Descuento</option>
+            <option value="freeDelivery">Delivery Gratis</option>
+        </select>
+    </label>
+    <button type="submit">Añadir Pedido</button>
+    <button type="button" onclick="toggleDeleteConfirmation()">Limpiar/Borrar</button>
+    <div id="deleteConfirmation" style="display:none;">
+        <p>¿Está seguro de que desea eliminar todos los pedidos?</p>
+        <button onclick="clearEarnings()">Sí</button>
+        <button onclick="toggleDeleteConfirmation()">No</button>
+    </div>
+</form>
+
+<!-- Formulario para guardar un nuevo motorizado -->
+<h2>Guardar Motorizado</h2>
+<form id="motorizedForm">
+    <label>Nombre de Motorizado: <input type="text" id="newMotorizedName" required></label>
+    <button type="button" onclick="addMotorized()">Añadir Motorizado</button>
+</form>
+
+<!-- Tabla para mostrar los motorizados guardados -->
+<h2>Motorizados</h2>
+<div id="motorizedListContainer">
+    <table>
+        <thead>
+            <tr>
+                <th>Nombre de Motorizado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody id="motorizedList"></tbody>
+    </table>
+</div>
+
+<!-- Seleccionar pedido para guardar como voucher -->
+<h2>Seleccionar Pedido para Guardar</h2>
+<label for="orderSelect">Selecciona el Pedido:</label>
+<select id="orderSelect"></select>
+<label for="fileFormat">Seleccionar Formato:</label>
+<select id="fileFormat">
+    <option value="pdf">PDF</option>
+    <option value="jpg">JPG</option>
+</select>
+<button onclick="exportSelectedOrderAsVoucher()">Guardar Pedido</button>
+<button onclick="sendOrderToWhatsApp()">Enviar Pedido a WhatsApp</button>
+
+<!-- Sección para mostrar ganancias del día -->
+<h2>Ganancia del Día</h2>
+<button onclick="downloadDailyEarnings()">Descargar Ganancia del Día</button>
+<button onclick="calculateTotalEarnings()">Suma de Ganancias del Día</button>
+<button onclick="calculateTotalRates()">Suma de Tarifas</button>
+<div id="totalEarningsDisplay">Total Ganancias: 0 C$</div>
+<div id="totalRatesDisplay">Total Tarifas: 0 C$</div>
+
+<!-- Conteo de pedidos por motorizado -->
+<h2>Conteo de Pedidos por Motorizado</h2>
+<div id="motorizedCountContainer">
+    <table>
+        <thead>
+            <tr>
+                <th>Nombre de Motorizado</th>
+                <th>Conteo de Pedidos</th>
+                <th>Total Efectivo (C$)</th>
+            </tr>
+        </thead>
+        <tbody id="motorizedCountTable"></tbody>
+    </table>
+    <button onclick="downloadMotorizedCount()">Descargar Conteo de Motorizados</button>
+</div>
+
+<!-- Tabla para mostrar los pedidos registrados -->
+<div id="orderTableContainer">
+    <table>
+        <thead>
+            <tr>
+                <th>Retiro</th>
+                <th>Lugar de Entrega</th>
+                <th>Producto a Entregar</th>
+                <th>Número de Cliente</th>
+                <th>Efectivo (C$)</th>
+                <th>Tarifa</th>
+                <th>Nombre de Motorizado</th>
+                <th>Tipo de Pedido</th>
+            </tr>
+        </thead>
+        <tbody id="orderTable"></tbody>
+        <tfoot>
+            <tr>
+                <td colspan="5" class="total">Total Diario de Pedidos</td>
+                <td id="dailyTotal">0</td>
+                <td></td>
+                <td></td>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+
+<!-- Historial de pedidos -->
+<div id="historyContainer">
+    <h2>Historial de Pedidos</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Retiro</th>
+                <th>Lugar de Entrega</th>
+                <th>Producto a Entregar</th>
+                <th>Número de Cliente</th>
+                <th>Efectivo (C$)</th>
+                <th>Tarifa</th>
+                <th>Nombre de Motorizado</th>
+                <th>Tipo de Pedido</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody id="historyTable"></tbody>
+    </table>
+</div>
+
+<!-- Resumen de tipos de pedidos -->
+<h2>Resumen de Tipos de Pedidos</h2>
+<div id="summaryContainer">
+    <table>
+        <thead>
+            <tr>
+                <th>Tipo de Pedido</th>
+                <th>Conteo</th>
+                <th>Total Efectivo (C$)</th>
+                <th>Motorizado</th> <!-- Nueva columna para el motorizado -->
+            </tr>
+        </thead>
+        <tbody id="orderSummaryTable"></tbody>
+    </table>
+</div>
+
+<script>
+    let orders = JSON.parse(localStorage.getItem('orders')) || [];
+    let motorized = JSON.parse(localStorage.getItem('motorized')) || [];
+
+    document.getElementById('currentDay').textContent = `Día: ${new Date().toLocaleString('es-ES', { weekday: 'long' })}`;
+
+    document.getElementById('orderForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const order = {
+            pickup: this.pickup.value,
+            deliveryAddress: this.deliveryAddress.value || "No especificado",
+            recipient: this.recipient.value || "No especificado",
+            customerNumber: this.customerNumber.value || "No especificado",
+            cash: parseFloat(this.cash.value),
+            rate: this.rate.value || "No especificado",
+            motorizedName: document.getElementById('motorizedSelect').value,
+            orderType: document.getElementById('orderType').value || "Normal", // Nuevo campo opcional
+        };
+        orders.push(order);
+        localStorage.setItem('orders', JSON.stringify(orders));
+        this.reset();
+        renderOrders();
+        renderHistory();
+        updateOrderSelect();
+        updateMotorizedCount();
+        updateOrderSummary(); // Actualizar resumen de tipos de pedidos
+    });
+
+    function addMotorized() {
+        const motorizedName = document.getElementById('newMotorizedName').value.trim();
+        if (motorizedName && !motorized.includes(motorizedName)) {
+            motorized.push(motorizedName);
+            localStorage.setItem('motorized', JSON.stringify(motorized));
+            updateMotorizedList();
+            updateMotorizedSelect();
+            document.getElementById('newMotorizedName').value = '';
+        } else if (motorized.includes(motorizedName)) {
+            alert("El motorizado ya existe.");
+        }
+    }
+
+    function updateMotorizedList() {
+        const motorizedListBody = document.getElementById('motorizedList');
+        motorizedListBody.innerHTML = '';
+        motorized.forEach((name, index) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${name}</td>
+                <td><button onclick="removeMotorized(${index})">Eliminar</button></td>
+            `;
+            motorizedListBody.appendChild(row);
+        });
+    }
+
+    function updateMotorizedSelect() {
+        const motorizedSelect = document.getElementById('motorizedSelect');
+        motorizedSelect.innerHTML = '<option value="">Seleccione un Motorizado</option>';
+        motorized.forEach(name => {
+            const option = document.createElement('option');
+            option.value = name;
+            option.textContent = name;
+            motorizedSelect.appendChild(option);
+        });
+    }
+
+    function removeMotorized(index) {
+        motorized.splice(index, 1);
+        localStorage.setItem('motorized', JSON.stringify(motorized));
+        updateMotorizedList();
+        updateMotorizedSelect();
+        updateMotorizedCount();
+    }
+
+    function renderOrders() {
+        const tableBody = document.getElementById('orderTable');
+        tableBody.innerHTML = '';
+        let dailyTotal = 0;
+
+        orders.forEach((order) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${order.pickup}</td>
+                <td>${order.deliveryAddress}</td>
+                <td>${order.recipient}</td>
+                <td>${order.customerNumber}</td>
+                <td>${order.cash} C$</td>
+                <td>${order.rate}</td>
+                <td>${order.motorizedName}</td>
+                <td>${order.orderType}</td> <!-- Mostrar el tipo de pedido -->
+            `;
+            tableBody.appendChild(row);
+            dailyTotal += order.cash;
+        });
+
+        document.getElementById('dailyTotal').textContent = dailyTotal + ' C$';
+    }
+
+    function renderHistory() {
+        const historyTableBody = document.getElementById('historyTable');
+        historyTableBody.innerHTML = '';
+
+        orders.forEach((order, index) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${order.pickup}</td>
+                <td>${order.deliveryAddress}</td>
+                <td>${order.recipient}</td>
+                <td>${order.customerNumber}</td>
+                <td>${order.cash} C$</td>
+                <td>${order.rate}</td>
+                <td>${order.motorizedName}</td>
+                <td>${order.orderType}</td> <!-- Mostrar el tipo de pedido -->
+                <td><button onclick="deleteOrder(${index})">Eliminar</button></td>
+            `;
+            historyTableBody.appendChild(row);
+        });
+    }
+
+    function updateOrderSummary() {
+        const orderSummaryTableBody = document.getElementById('orderSummaryTable');
+        const summary = {};
+
+        orders.forEach(order => {
+            const type = order.orderType || "Normal"; // Si no hay tipo, se considera normal
+            const motorizedName = order.motorizedName; // Guardar el nombre del motorizado
+            if (!summary[type]) {
+                summary[type] = { count: 0, total: 0, motorized: [] }; // Almacenar motorizados en un arreglo
+            }
+            summary[type].count++;
+            summary[type].total += order.cash;
+            if (!summary[type].motorized.includes(motorizedName)) {
+                summary[type].motorized.push(motorizedName); // Solo agregar si no está ya en la lista
+            }
+        });
+
+        orderSummaryTableBody.innerHTML = ''; // Limpiar tabla antes de actualizar
+        for (const [type, data] of Object.entries(summary)) {
+            const row = document.createElement('tr');
+            row.innerHTML = `<td>${type}</td><td>${data.count}</td><td>${data.total} C$</td><td>${data.motorized.join(', ')}</td>`;
+            orderSummaryTableBody.appendChild(row);
+        }
+    }
+
+    function updateMotorizedCount() {
+        const motorizedCount = {};
+        orders.forEach(order => {
+            if (motorizedCount[order.motorizedName]) {
+                motorizedCount[order.motorizedName].count++;
+                motorizedCount[order.motorizedName].total += order.cash;
+            } else {
+                motorizedCount[order.motorizedName] = { count: 1, total: order.cash };
+            }
+        });
+
+        const motorizedCountTableBody = document.getElementById('motorizedCountTable');
+        motorizedCountTableBody.innerHTML = '';
+
+        for (const [name, data] of Object.entries(motorizedCount)) {
+            const row = document.createElement('tr');
+            row.innerHTML = `<td>${name}</td><td>${data.count}</td><td>${data.total} C$</td>`;
+            motorizedCountTableBody.appendChild(row);
+        }
+    }
+
+    function deleteOrder(index) {
+        orders.splice(index, 1);
+        localStorage.setItem('orders', JSON.stringify(orders));
+        renderOrders();
+        renderHistory();
+        updateOrderSelect();
+        updateMotorizedCount();
+        updateOrderSummary(); // Actualizar resumen de tipos de pedidos
+    }
+
+    function updateOrderSelect() {
+        const orderSelect = document.getElementById('orderSelect');
+        orderSelect.innerHTML = '';
+        orders.forEach((order, index) => {
+            const option = document.createElement('option');
+            option.value = index;
+            option.textContent = `Pedido ${index + 1}`;
+            orderSelect.appendChild(option);
+        });
+    }
+
+    async function exportSelectedOrderAsVoucher() {
+        const selectedOrderIndex = document.getElementById('orderSelect').value;
+        const order = orders[selectedOrderIndex];
+        const voucherContainer = document.createElement('div');
+        voucherContainer.className = 'voucher';
+        voucherContainer.innerHTML = `
+            <h2>Voucher de Pedido</h2>
+            <p><strong>Retiro:</strong> ${order.pickup}</p>
+            <p><strong>Lugar de Entrega:</strong> ${order.deliveryAddress}</p>
+            <p><strong>Producto a Entregar:</strong> ${order.recipient}</p>
+            <p><strong>Número de Cliente:</strong> ${order.customerNumber}</p>
+            <p><strong>Efectivo:</strong> ${order.cash} C$</p>
+            <p><strong>Tarifa:</strong> ${order.rate}</p>
+            <p><strong>Nombre de Motorizado:</strong> ${order.motorizedName}</p>
+            <p><strong>Tipo de Pedido:</strong> ${order.orderType}</p> <!-- Mostrar el tipo de pedido -->
+        `;
+        
+        document.body.appendChild(voucherContainer);
+        const canvas = await html2canvas(voucherContainer);
+        const imgData = canvas.toDataURL("image/png");
+        document.body.removeChild(voucherContainer);
+
+        const fileFormat = document.getElementById('fileFormat').value;
+        if (fileFormat === 'pdf') {
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            pdf.addImage(imgData, 'PNG', 10, 10, 190, 0);
+            pdf.save(`voucher_pedido_${parseInt(selectedOrderIndex) + 1}.pdf`);
+        } else {
+            const link = document.createElement('a');
+            link.href = imgData;
+            link.download = `voucher_pedido_${parseInt(selectedOrderIndex) + 1}.jpg`;
+            link.click();
+        }
+    }
+
+    function sendOrderToWhatsApp() {
+        const selectedOrderIndex = document.getElementById('orderSelect').value;
+        const order = orders[selectedOrderIndex];
+
+        const message = `Nuevo Pedido:\n` +
+                        `Retiro: ${order.pickup}\n` +
+                        `Lugar de Entrega: ${order.deliveryAddress}\n` +
+                        `Producto a Entregar: ${order.recipient}\n` +
+                        `Número de Cliente: ${order.customerNumber}\n` +
+                        `Efectivo: ${order.cash} C$\n` +
+                        `Tarifa: ${order.rate}\n` +
+                        `Nombre de Motorizado: ${order.motorizedName}\n` +
+                        `Tipo de Pedido: ${order.orderType}`; // Incluir tipo de pedido en el mensaje
+
+        const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+        window.open(whatsappUrl, '_blank');
+    }
+
+    function downloadDailyEarnings() {
+        const dailyTotal = orders.reduce((total, order) => total + order.cash, 0);
+        const earningsText = `Ganancia del día (${new Date().toLocaleString('es-ES', { weekday: 'long' })}): ${dailyTotal} C$`;
+        const blob = new Blob([earningsText], { type: 'text/plain' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `ganancia_del_dia_${new Date().toISOString().split('T')[0]}.txt`;
+        link.click();
+    }
+
+    function calculateTotalEarnings() {
+        const totalEarnings = orders.reduce((total, order) => total + order.cash, 0);
+        document.getElementById('totalEarningsDisplay').textContent = `Total Ganancias: ${totalEarnings} C$`;
+    }
+
+    function calculateTotalRates() {
+        const totalRates = orders.reduce((total, order) => total + (parseFloat(order.rate) || 0), 0);
+        document.getElementById('totalRatesDisplay').textContent = `Total Tarifas: ${totalRates} C$`;
+    }
+
+    function toggleDeleteConfirmation() {
+        const confirmationDiv = document.getElementById('deleteConfirmation');
+        confirmationDiv.style.display = confirmationDiv.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function clearEarnings() {
+        if (confirm("¿Está seguro de que desea eliminar todos los pedidos?")) {
+            localStorage.removeItem('orders');
+            orders.length = 0;
+            renderOrders();
+            renderHistory();
+            updateOrderSelect();
+            document.getElementById('totalEarningsDisplay').textContent = `Total Ganancias: 0 C$`;
+            updateMotorizedCount();
+        }
+    }
+
+    function downloadMotorizedCount() {
+        const motorizedCount = {};
+        orders.forEach(order => {
+            if (motorizedCount[order.motorizedName]) {
+                motorizedCount[order.motorizedName].count++;
+                motorizedCount[order.motorizedName].total += order.cash;
+            } else {
+                motorizedCount[order.motorizedName] = { count: 1, total: order.cash };
+            }
+        });
+
+        let countText = "Nombre de Motorizado,Conteo de Pedidos,Total Efectivo (C$)\n";
+        for (const [name, data] of Object.entries(motorizedCount)) {
+            countText += `${name},${data.count},${data.total}\n`;
+        }
+
+        const blob = new Blob([countText], { type: 'text/csv' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `conteo_pedidos_motorizados_${new Date().toISOString().split('T')[0]}.csv`;
+        link.click();
+    }
+
+    // Renderizar la lista de motorizados y pedidos al inicio
+    updateMotorizedList();
+    updateMotorizedSelect();
+    renderOrders();
+    renderHistory();
+    updateMotorizedCount();
+    updateOrderSummary(); // Actualizar resumen de tipos de pedidos
+</script>
+
+</body>
+</html>
