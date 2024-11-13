@@ -49,7 +49,7 @@
             margin-top: 10px; /* Espaciado entre botones */
         }
         button:hover { background-color: #3700b3; }
-        input, select, textarea { 
+        input, select { 
             border: 1px solid #ccc; 
             border-radius: 4px; 
             padding: 10px; 
@@ -64,13 +64,18 @@
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); 
             margin: auto; 
         }
+        .statistics {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .promotion-form {
+            margin-top: 20px; 
+        }
         @media (max-width: 600px) {
             button { padding: 8px; } /* Ajustar el tamaño de los botones en pantallas pequeñas */
             th, td { padding: 8px; } /* Ajustar el padding de las celdas en pantallas pequeñas */
         }
     </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
 
@@ -79,19 +84,22 @@
 <h1>Sistema de Registro y Facturación de Pedidos</h1>
 <h2 id="currentDay"></h2>
 
+<!-- Panel de Estadísticas -->
+<div class="statistics">
+    <h2>Estadísticas</h2>
+    <p id="totalOrders">Total de Pedidos: 0</p>
+    <p id="totalEarnings">Total Ganancias: 0 C$</p>
+    <p id="mostActiveDeliveryPerson">Repartidor Más Activo: Ninguno</p>
+</div>
+
 <!-- Formulario para registrar un nuevo pedido -->
 <form id="orderForm">
     <h2>Registrar Nuevo Pedido</h2>
-    <label>Retiro: <input type="text" id="pickup" required></label>
-    <label>Lugar de Entrega: <input type="text" id="deliveryAddress"></label>
-    <label>Producto a Entregar: <input type="text" id="recipient"></label>
-    <label>Número de Cliente: <input type="text" id="customerNumber"></label>
-    <label>Efectivo (C$): <input type="number" id="cash" min="0" required></label>
-    <label>Tarifa: <input type="text" id="rate"></label>
-    <label>Nombre de Motorizado: 
-        <select id="motorizedSelect" required>
-            <option value="">Seleccione un Motorizado</option>
-        </select>
+    <label>Referencia: <input type="text" id="pickup" required></label>
+    <label>Costo de Delivery (C$): <input type="number" id="cash" min="0" required></label>
+    <label>Nombre de Repartidor: 
+        <input type="text" id="deliveryPersonInput" placeholder="Buscar Repartidor" required>
+        <select id="deliveryPersonSelect" style="display: none;"></select>
     </label>
     <label>Tipo de Pedido: 
         <select id="orderType">
@@ -102,7 +110,7 @@
         </select>
     </label>
     <button type="submit">Añadir Pedido</button>
-    <button type="button" onclick="toggleDeleteConfirmation()">Limpiar/Borrar</button>
+    <button type="button" onclick="clearAllOrders()">Limpiar/Borrar</button>
     <div id="deleteConfirmation" style="display:none;">
         <p>¿Está seguro de que desea eliminar todos los pedidos?</p>
         <button onclick="clearEarnings()">Sí</button>
@@ -110,24 +118,47 @@
     </div>
 </form>
 
-<!-- Formulario para guardar un nuevo motorizado -->
-<h2>Guardar Motorizado</h2>
-<form id="motorizedForm">
-    <label>Nombre de Motorizado: <input type="text" id="newMotorizedName" required></label>
-    <button type="button" onclick="addMotorized()">Añadir Motorizado</button>
+<!-- Formulario para guardar un nuevo repartidor -->
+<h2>Guardar Repartidor</h2>
+<form id="deliveryPersonForm">
+    <label>Nombre de Repartidor: <input type="text" id="newDeliveryPersonName" required></label>
+    <button type="button" onclick="addDeliveryPerson()">Añadir Repartidor</button>
 </form>
 
-<!-- Tabla para mostrar los motorizados guardados -->
-<h2>Motorizados</h2>
-<div id="motorizedListContainer">
+<!-- Tabla para mostrar los repartidores guardados -->
+<h2>Repartidores</h2>
+<div id="deliveryPersonListContainer">
     <table>
         <thead>
             <tr>
-                <th>Nombre de Motorizado</th>
+                <th>Nombre de Repartidor</th>
                 <th>Acciones</th>
             </tr>
         </thead>
-        <tbody id="motorizedList"></tbody>
+        <tbody id="deliveryPersonList"></tbody>
+    </table>
+</div>
+
+<!-- Apartado de Configuración de Promociones -->
+<h2>Configuración de Promociones</h2>
+<div class="promotion-form">
+    <label>Nombre de la Promoción: <input type="text" id="promotionName" required></label>
+    <label>Descuento (%): <input type="number" id="promotionDiscount" min="0" max="100" required></label>
+    <button type="button" onclick="addPromotion()">Añadir Promoción</button>
+</div>
+
+<!-- Tabla de Promociones -->
+<h2>Promociones Activas</h2>
+<div id="promotionListContainer">
+    <table>
+        <thead>
+            <tr>
+                <th>Nombre de Promoción</th>
+                <th>Descuento (%)</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody id="promotionList"></tbody>
     </table>
 </div>
 
@@ -139,32 +170,28 @@
 <select id="fileFormat">
     <option value="pdf">PDF</option>
     <option value="jpg">JPG</option>
+    <option value="txt">TXT</option>
 </select>
 <button onclick="exportSelectedOrderAsVoucher()">Guardar Pedido</button>
 <button onclick="sendOrderToWhatsApp()">Enviar Pedido a WhatsApp</button>
 
 <!-- Sección para mostrar ganancias del día -->
-<h2>Ganancia del Día</h2>
-<button onclick="downloadDailyEarnings()">Descargar Ganancia del Día</button>
-<button onclick="calculateTotalEarnings()">Suma de Ganancias del Día</button>
-<button onclick="calculateTotalRates()">Suma de Tarifas</button>
 <div id="totalEarningsDisplay">Total Ganancias: 0 C$</div>
-<div id="totalRatesDisplay">Total Tarifas: 0 C$</div>
 
-<!-- Conteo de pedidos por motorizado -->
-<h2>Conteo de Pedidos por Motorizado</h2>
-<div id="motorizedCountContainer">
+<!-- Conteo de pedidos por repartidor -->
+<h2>Conteo de Pedidos por Repartidor</h2>
+<div id="deliveryPersonCountContainer">
     <table>
         <thead>
             <tr>
-                <th>Nombre de Motorizado</th>
+                <th>Nombre de Repartidor</th>
                 <th>Conteo de Pedidos</th>
-                <th>Total Efectivo (C$)</th>
+                <th>Total Costo (C$)</th>
             </tr>
         </thead>
-        <tbody id="motorizedCountTable"></tbody>
+        <tbody id="deliveryPersonCountTable"></tbody>
     </table>
-    <button onclick="downloadMotorizedCount()">Descargar Conteo de Motorizados</button>
+    <button onclick="downloadDeliveryPersonCount()">Descargar Conteo de Repartidores</button>
 </div>
 
 <!-- Tabla para mostrar los pedidos registrados -->
@@ -172,22 +199,17 @@
     <table>
         <thead>
             <tr>
-                <th>Retiro</th>
-                <th>Lugar de Entrega</th>
-                <th>Producto a Entregar</th>
-                <th>Número de Cliente</th>
-                <th>Efectivo (C$)</th>
-                <th>Tarifa</th>
-                <th>Nombre de Motorizado</th>
+                <th>Referencia</th>
+                <th>Costo de Delivery (C$)</th>
+                <th>Nombre de Repartidor</th>
                 <th>Tipo de Pedido</th>
             </tr>
         </thead>
         <tbody id="orderTable"></tbody>
         <tfoot>
             <tr>
-                <td colspan="5" class="total">Total Diario de Pedidos</td>
+                <td colspan="2" class="total">Total Diario de Pedidos</td>
                 <td id="dailyTotal">0</td>
-                <td></td>
                 <td></td>
             </tr>
         </tfoot>
@@ -200,13 +222,9 @@
     <table>
         <thead>
             <tr>
-                <th>Retiro</th>
-                <th>Lugar de Entrega</th>
-                <th>Producto a Entregar</th>
-                <th>Número de Cliente</th>
-                <th>Efectivo (C$)</th>
-                <th>Tarifa</th>
-                <th>Nombre de Motorizado</th>
+                <th>Referencia</th>
+                <th>Costo de Delivery (C$)</th>
+                <th>Nombre de Repartidor</th>
                 <th>Tipo de Pedido</th>
                 <th>Acciones</th>
             </tr>
@@ -215,25 +233,10 @@
     </table>
 </div>
 
-<!-- Resumen de tipos de pedidos -->
-<h2>Resumen de Tipos de Pedidos</h2>
-<div id="summaryContainer">
-    <table>
-        <thead>
-            <tr>
-                <th>Tipo de Pedido</th>
-                <th>Conteo</th>
-                <th>Total Efectivo (C$)</th>
-                <th>Motorizado</th> <!-- Nueva columna para el motorizado -->
-            </tr>
-        </thead>
-        <tbody id="orderSummaryTable"></tbody>
-    </table>
-</div>
-
 <script>
     let orders = JSON.parse(localStorage.getItem('orders')) || [];
-    let motorized = JSON.parse(localStorage.getItem('motorized')) || [];
+    let deliveryPersons = JSON.parse(localStorage.getItem('deliveryPersons')) || [];
+    let promotions = JSON.parse(localStorage.getItem('promotions')) || [];
 
     document.getElementById('currentDay').textContent = `Día: ${new Date().toLocaleString('es-ES', { weekday: 'long' })}`;
 
@@ -241,13 +244,9 @@
         event.preventDefault();
         const order = {
             pickup: this.pickup.value,
-            deliveryAddress: this.deliveryAddress.value || "No especificado",
-            recipient: this.recipient.value || "No especificado",
-            customerNumber: this.customerNumber.value || "No especificado",
             cash: parseFloat(this.cash.value),
-            rate: this.rate.value || "No especificado",
-            motorizedName: document.getElementById('motorizedSelect').value,
-            orderType: document.getElementById('orderType').value || "Normal", // Nuevo campo opcional
+            deliveryPersonName: document.getElementById('deliveryPersonInput').value,
+            orderType: document.getElementById('orderType').value || "Normal",
         };
         orders.push(order);
         localStorage.setItem('orders', JSON.stringify(orders));
@@ -255,53 +254,66 @@
         renderOrders();
         renderHistory();
         updateOrderSelect();
-        updateMotorizedCount();
-        updateOrderSummary(); // Actualizar resumen de tipos de pedidos
+        updateDeliveryPersonCount();
+        updateOrderSummary();
+        updateStatistics();
     });
 
-    function addMotorized() {
-        const motorizedName = document.getElementById('newMotorizedName').value.trim();
-        if (motorizedName && !motorized.includes(motorizedName)) {
-            motorized.push(motorizedName);
-            localStorage.setItem('motorized', JSON.stringify(motorized));
-            updateMotorizedList();
-            updateMotorizedSelect();
-            document.getElementById('newMotorizedName').value = '';
-        } else if (motorized.includes(motorizedName)) {
-            alert("El motorizado ya existe.");
+    function clearAllOrders() {
+        if (confirm("¿Está seguro de que desea eliminar todos los pedidos?")) {
+            orders = [];
+            localStorage.setItem('orders', JSON.stringify(orders));
+            renderOrders();
+            renderHistory();
+            updateOrderSelect();
+            updateDeliveryPersonCount();
+            updateStatistics();
         }
     }
 
-    function updateMotorizedList() {
-        const motorizedListBody = document.getElementById('motorizedList');
-        motorizedListBody.innerHTML = '';
-        motorized.forEach((name, index) => {
+    function addDeliveryPerson() {
+        const deliveryPersonName = document.getElementById('newDeliveryPersonName').value.trim();
+        if (deliveryPersonName && !deliveryPersons.includes(deliveryPersonName)) {
+            deliveryPersons.push(deliveryPersonName);
+            localStorage.setItem('deliveryPersons', JSON.stringify(deliveryPersons));
+            updateDeliveryPersonList();
+            updateDeliveryPersonSelect();
+            document.getElementById('newDeliveryPersonName').value = '';
+        } else if (deliveryPersons.includes(deliveryPersonName)) {
+            alert("El repartidor ya existe.");
+        }
+    }
+
+    function updateDeliveryPersonList() {
+        const deliveryPersonListBody = document.getElementById('deliveryPersonList');
+        deliveryPersonListBody.innerHTML = '';
+        deliveryPersons.forEach((name, index) => {
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td>${name}</td>
-                <td><button onclick="removeMotorized(${index})">Eliminar</button></td>
+                <td><button onclick="removeDeliveryPerson(${index})">Eliminar</button></td>
             `;
-            motorizedListBody.appendChild(row);
+            deliveryPersonListBody.appendChild(row);
         });
     }
 
-    function updateMotorizedSelect() {
-        const motorizedSelect = document.getElementById('motorizedSelect');
-        motorizedSelect.innerHTML = '<option value="">Seleccione un Motorizado</option>';
-        motorized.forEach(name => {
+    function updateDeliveryPersonSelect() {
+        const deliveryPersonSelect = document.getElementById('deliveryPersonSelect');
+        deliveryPersonSelect.innerHTML = '<option value="">Seleccione un Repartidor</option>';
+        deliveryPersons.forEach(name => {
             const option = document.createElement('option');
             option.value = name;
             option.textContent = name;
-            motorizedSelect.appendChild(option);
+            deliveryPersonSelect.appendChild(option);
         });
     }
 
-    function removeMotorized(index) {
-        motorized.splice(index, 1);
-        localStorage.setItem('motorized', JSON.stringify(motorized));
-        updateMotorizedList();
-        updateMotorizedSelect();
-        updateMotorizedCount();
+    function removeDeliveryPerson(index) {
+        deliveryPersons.splice(index, 1);
+        localStorage.setItem('deliveryPersons', JSON.stringify(deliveryPersons));
+        updateDeliveryPersonList();
+        updateDeliveryPersonSelect();
+        updateDeliveryPersonCount();
     }
 
     function renderOrders() {
@@ -313,13 +325,9 @@
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td>${order.pickup}</td>
-                <td>${order.deliveryAddress}</td>
-                <td>${order.recipient}</td>
-                <td>${order.customerNumber}</td>
                 <td>${order.cash} C$</td>
-                <td>${order.rate}</td>
-                <td>${order.motorizedName}</td>
-                <td>${order.orderType}</td> <!-- Mostrar el tipo de pedido -->
+                <td>${order.deliveryPersonName}</td>
+                <td>${order.orderType}</td>
             `;
             tableBody.appendChild(row);
             dailyTotal += order.cash;
@@ -336,62 +344,33 @@
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td>${order.pickup}</td>
-                <td>${order.deliveryAddress}</td>
-                <td>${order.recipient}</td>
-                <td>${order.customerNumber}</td>
                 <td>${order.cash} C$</td>
-                <td>${order.rate}</td>
-                <td>${order.motorizedName}</td>
-                <td>${order.orderType}</td> <!-- Mostrar el tipo de pedido -->
+                <td>${order.deliveryPersonName}</td>
+                <td>${order.orderType}</td>
                 <td><button onclick="deleteOrder(${index})">Eliminar</button></td>
             `;
             historyTableBody.appendChild(row);
         });
     }
 
-    function updateOrderSummary() {
-        const orderSummaryTableBody = document.getElementById('orderSummaryTable');
-        const summary = {};
-
+    function updateDeliveryPersonCount() {
+        const deliveryPersonCount = {};
         orders.forEach(order => {
-            const type = order.orderType || "Normal"; // Si no hay tipo, se considera normal
-            const motorizedName = order.motorizedName; // Guardar el nombre del motorizado
-            if (!summary[type]) {
-                summary[type] = { count: 0, total: 0, motorized: [] }; // Almacenar motorizados en un arreglo
-            }
-            summary[type].count++;
-            summary[type].total += order.cash;
-            if (!summary[type].motorized.includes(motorizedName)) {
-                summary[type].motorized.push(motorizedName); // Solo agregar si no está ya en la lista
-            }
-        });
-
-        orderSummaryTableBody.innerHTML = ''; // Limpiar tabla antes de actualizar
-        for (const [type, data] of Object.entries(summary)) {
-            const row = document.createElement('tr');
-            row.innerHTML = `<td>${type}</td><td>${data.count}</td><td>${data.total} C$</td><td>${data.motorized.join(', ')}</td>`;
-            orderSummaryTableBody.appendChild(row);
-        }
-    }
-
-    function updateMotorizedCount() {
-        const motorizedCount = {};
-        orders.forEach(order => {
-            if (motorizedCount[order.motorizedName]) {
-                motorizedCount[order.motorizedName].count++;
-                motorizedCount[order.motorizedName].total += order.cash;
+            if (deliveryPersonCount[order.deliveryPersonName]) {
+                deliveryPersonCount[order.deliveryPersonName].count++;
+                deliveryPersonCount[order.deliveryPersonName].total += order.cash;
             } else {
-                motorizedCount[order.motorizedName] = { count: 1, total: order.cash };
+                deliveryPersonCount[order.deliveryPersonName] = { count: 1, total: order.cash };
             }
         });
 
-        const motorizedCountTableBody = document.getElementById('motorizedCountTable');
-        motorizedCountTableBody.innerHTML = '';
+        const deliveryPersonCountTableBody = document.getElementById('deliveryPersonCountTable');
+        deliveryPersonCountTableBody.innerHTML = '';
 
-        for (const [name, data] of Object.entries(motorizedCount)) {
+        for (const [name, data] of Object.entries(deliveryPersonCount)) {
             const row = document.createElement('tr');
             row.innerHTML = `<td>${name}</td><td>${data.count}</td><td>${data.total} C$</td>`;
-            motorizedCountTableBody.appendChild(row);
+            deliveryPersonCountTableBody.appendChild(row);
         }
     }
 
@@ -401,8 +380,8 @@
         renderOrders();
         renderHistory();
         updateOrderSelect();
-        updateMotorizedCount();
-        updateOrderSummary(); // Actualizar resumen de tipos de pedidos
+        updateDeliveryPersonCount();
+        updateStatistics();
     }
 
     function updateOrderSelect() {
@@ -423,14 +402,10 @@
         voucherContainer.className = 'voucher';
         voucherContainer.innerHTML = `
             <h2>Voucher de Pedido</h2>
-            <p><strong>Retiro:</strong> ${order.pickup}</p>
-            <p><strong>Lugar de Entrega:</strong> ${order.deliveryAddress}</p>
-            <p><strong>Producto a Entregar:</strong> ${order.recipient}</p>
-            <p><strong>Número de Cliente:</strong> ${order.customerNumber}</p>
-            <p><strong>Efectivo:</strong> ${order.cash} C$</p>
-            <p><strong>Tarifa:</strong> ${order.rate}</p>
-            <p><strong>Nombre de Motorizado:</strong> ${order.motorizedName}</p>
-            <p><strong>Tipo de Pedido:</strong> ${order.orderType}</p> <!-- Mostrar el tipo de pedido -->
+            <p><strong>Referencia:</strong> ${order.pickup}</p>
+            <p><strong>Costo de Delivery:</strong> ${order.cash} C$</p>
+            <p><strong>Nombre de Repartidor:</strong> ${order.deliveryPersonName}</p>
+            <p><strong>Tipo de Pedido:</strong> ${order.orderType}</p>
         `;
         
         document.body.appendChild(voucherContainer);
@@ -444,6 +419,12 @@
             const pdf = new jsPDF('p', 'mm', 'a4');
             pdf.addImage(imgData, 'PNG', 10, 10, 190, 0);
             pdf.save(`voucher_pedido_${parseInt(selectedOrderIndex) + 1}.pdf`);
+        } else if (fileFormat === 'txt') {
+            const textBlob = new Blob([JSON.stringify(order)], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(textBlob);
+            link.download = `voucher_pedido_${parseInt(selectedOrderIndex) + 1}.txt`;
+            link.click();
         } else {
             const link = document.createElement('a');
             link.href = imgData;
@@ -457,86 +438,39 @@
         const order = orders[selectedOrderIndex];
 
         const message = `Nuevo Pedido:\n` +
-                        `Retiro: ${order.pickup}\n` +
-                        `Lugar de Entrega: ${order.deliveryAddress}\n` +
-                        `Producto a Entregar: ${order.recipient}\n` +
-                        `Número de Cliente: ${order.customerNumber}\n` +
-                        `Efectivo: ${order.cash} C$\n` +
-                        `Tarifa: ${order.rate}\n` +
-                        `Nombre de Motorizado: ${order.motorizedName}\n` +
-                        `Tipo de Pedido: ${order.orderType}`; // Incluir tipo de pedido en el mensaje
+                        `Referencia: ${order.pickup}\n` +
+                        `Costo de Delivery: ${order.cash} C$\n` +
+                        `Nombre de Repartidor: ${order.deliveryPersonName}\n` +
+                        `Tipo de Pedido: ${order.orderType}`;
 
         const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
         window.open(whatsappUrl, '_blank');
     }
 
-    function downloadDailyEarnings() {
-        const dailyTotal = orders.reduce((total, order) => total + order.cash, 0);
-        const earningsText = `Ganancia del día (${new Date().toLocaleString('es-ES', { weekday: 'long' })}): ${dailyTotal} C$`;
-        const blob = new Blob([earningsText], { type: 'text/plain' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = `ganancia_del_dia_${new Date().toISOString().split('T')[0]}.txt`;
-        link.click();
-    }
-
-    function calculateTotalEarnings() {
+    function updateStatistics() {
+        const totalOrders = orders.length;
         const totalEarnings = orders.reduce((total, order) => total + order.cash, 0);
-        document.getElementById('totalEarningsDisplay').textContent = `Total Ganancias: ${totalEarnings} C$`;
-    }
+        const deliveryPersonCount = {};
 
-    function calculateTotalRates() {
-        const totalRates = orders.reduce((total, order) => total + (parseFloat(order.rate) || 0), 0);
-        document.getElementById('totalRatesDisplay').textContent = `Total Tarifas: ${totalRates} C$`;
-    }
-
-    function toggleDeleteConfirmation() {
-        const confirmationDiv = document.getElementById('deleteConfirmation');
-        confirmationDiv.style.display = confirmationDiv.style.display === 'none' ? 'block' : 'none';
-    }
-
-    function clearEarnings() {
-        if (confirm("¿Está seguro de que desea eliminar todos los pedidos?")) {
-            localStorage.removeItem('orders');
-            orders.length = 0;
-            renderOrders();
-            renderHistory();
-            updateOrderSelect();
-            document.getElementById('totalEarningsDisplay').textContent = `Total Ganancias: 0 C$`;
-            updateMotorizedCount();
-        }
-    }
-
-    function downloadMotorizedCount() {
-        const motorizedCount = {};
         orders.forEach(order => {
-            if (motorizedCount[order.motorizedName]) {
-                motorizedCount[order.motorizedName].count++;
-                motorizedCount[order.motorizedName].total += order.cash;
+            if (deliveryPersonCount[order.deliveryPersonName]) {
+                deliveryPersonCount[order.deliveryPersonName]++;
             } else {
-                motorizedCount[order.motorizedName] = { count: 1, total: order.cash };
+                deliveryPersonCount[order.deliveryPersonName] = 1;
             }
         });
 
-        let countText = "Nombre de Motorizado,Conteo de Pedidos,Total Efectivo (C$)\n";
-        for (const [name, data] of Object.entries(motorizedCount)) {
-            countText += `${name},${data.count},${data.total}\n`;
-        }
+        const mostActiveDeliveryPerson = Object.keys(deliveryPersonCount).reduce((a, b) => deliveryPersonCount[a] > deliveryPersonCount[b] ? a : b, '');
 
-        const blob = new Blob([countText], { type: 'text/csv' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = `conteo_pedidos_motorizados_${new Date().toISOString().split('T')[0]}.csv`;
-        link.click();
+        document.getElementById('totalOrders').textContent = `Total de Pedidos: ${totalOrders}`;
+        document.getElementById('totalEarnings').textContent = `Total Ganancias: ${totalEarnings} C$`;
+        document.getElementById('mostActiveDeliveryPerson').textContent = `Repartidor Más Activo: ${mostActiveDeliveryPerson || 'Ninguno'}`;
     }
 
-    // Renderizar la lista de motorizados y pedidos al inicio
-    updateMotorizedList();
-    updateMotorizedSelect();
-    renderOrders();
-    renderHistory();
-    updateMotorizedCount();
-    updateOrderSummary(); // Actualizar resumen de tipos de pedidos
+    function addPromotion() {
+        const promotionName = document.getElementById('promotionName').value.trim();
+        // Código para añadir promoción...
+    }
 </script>
 
 </body>
