@@ -19,9 +19,9 @@
         }
         img.logo {
             display: block;
-            margin: 0 auto 20px; /* Centrar y añadir margen inferior */
-            max-width: 100%; /* Asegurar que el logo no se salga de la pantalla */
-            height: auto; /* Mantener proporciones del logo */
+            margin: 0 auto 20px; 
+            max-width: 100%; 
+            height: auto; 
         }
         form, .card, table {
             width: 100%; 
@@ -32,7 +32,7 @@
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
             padding: 15px;
             margin-bottom: 20px;
-            box-sizing: border-box; /* Asegurar que el padding no afecte el tamaño total */
+            box-sizing: border-box; 
         }
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 10px; border: 1px solid #ddd; text-align: left; }
@@ -46,7 +46,7 @@
             cursor: pointer; 
             width: 100%; 
             transition: background-color 0.3s; 
-            margin-top: 10px; /* Espaciado entre botones */
+            margin-top: 10px; 
         }
         button:hover { background-color: #3700b3; }
         input, select { 
@@ -57,34 +57,23 @@
             margin: 8px 0; 
             box-sizing: border-box; 
         }
-        .voucher {
-            padding: 20px; 
-            border: 1px solid #000; 
-            border-radius: 5px; 
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); 
-            margin: auto; 
-        }
         .statistics {
             text-align: center;
             margin-bottom: 20px;
         }
-        .promotion-form {
-            margin-top: 20px; 
-        }
         @media (max-width: 600px) {
-            button { padding: 8px; } /* Ajustar el tamaño de los botones en pantallas pequeñas */
-            th, td { padding: 8px; } /* Ajustar el padding de las celdas en pantallas pequeñas */
+            button { padding: 8px; }
+            th, td { padding: 8px; }
         }
     </style>
 </head>
 <body>
 
-<img src="logo.jpg" alt="Logo" class="logo"> <!-- Logo agregado aquí -->
+<img src="logo.jpg" alt="Logo" class="logo"> 
 
 <h1>Sistema de Registro y Facturación de Pedidos</h1>
 <h2 id="currentDay"></h2>
 
-<!-- Panel de Estadísticas -->
 <div class="statistics">
     <h2>Estadísticas</h2>
     <p id="totalOrders">Total de Pedidos: 0</p>
@@ -92,7 +81,6 @@
     <p id="mostActiveDeliveryPerson">Repartidor Más Activo: Ninguno</p>
 </div>
 
-<!-- Formulario para registrar un nuevo pedido -->
 <form id="orderForm">
     <h2>Registrar Nuevo Pedido</h2>
     <label>Referencia: <input type="text" id="pickup" required></label>
@@ -111,105 +99,22 @@
     </label>
     <button type="submit">Añadir Pedido</button>
     <button type="button" onclick="clearAllOrders()">Limpiar/Borrar</button>
-    <div id="deleteConfirmation" style="display:none;">
-        <p>¿Está seguro de que desea eliminar todos los pedidos?</p>
-        <button onclick="clearEarnings()">Sí</button>
-        <button onclick="toggleDeleteConfirmation()">No</button>
-    </div>
 </form>
 
-<!-- Formulario para guardar un nuevo repartidor -->
 <h2>Guardar Repartidor</h2>
 <form id="deliveryPersonForm">
     <label>Nombre de Repartidor: <input type="text" id="newDeliveryPersonName" required></label>
     <button type="button" onclick="addDeliveryPerson()">Añadir Repartidor</button>
 </form>
 
-<!-- Tabla para mostrar los repartidores guardados -->
-<h2>Repartidores</h2>
-<div id="deliveryPersonListContainer">
-    <table>
-        <thead>
-            <tr>
-                <th>Nombre de Repartidor</th>
-                <th>Acciones</th>
-                <th>Totales</th>
-                <th>Sumar</th>
-            </tr>
-        </thead>
-        <tbody id="deliveryPersonList"></tbody>
-    </table>
-</div>
+<div id="deliveryPersonTablesContainer"></div>
 
-<!-- Apartado de Configuración de Promociones -->
-<h2>Configuración de Promociones</h2>
-<div class="promotion-form">
-    <label>Nombre de la Promoción: <input type="text" id="promotionName" required></label>
-    <label>Descuento (%): <input type="number" id="promotionDiscount" min="0" max="100" required></label>
-    <button type="button" onclick="addPromotion()">Añadir Promoción</button>
-</div>
-
-<!-- Tabla de Promociones -->
-<h2>Promociones Activas</h2>
-<div id="promotionListContainer">
-    <table>
-        <thead>
-            <tr>
-                <th>Nombre de Promoción</th>
-                <th>Descuento (%)</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody id="promotionList"></tbody>
-    </table>
-</div>
-
-<!-- Sección para mostrar ganancias del día -->
 <div id="totalEarningsDisplay">Total Ganancias: 0 C$</div>
 <button onclick="calculateTotalEarnings()">Calcular Total Ganancias del Día</button>
-
-<!-- Conteo de pedidos por repartidor -->
-<h2>Conteo de Pedidos por Repartidor</h2>
-<div id="deliveryPersonCountContainer">
-    <table>
-        <thead>
-            <tr>
-                <th>Nombre de Repartidor</th>
-                <th>Conteo de Pedidos</th>
-                <th>Total Costo (C$)</th>
-            </tr>
-        </thead>
-        <tbody id="deliveryPersonCountTable"></tbody>
-    </table>
-    <button onclick="downloadDeliveryPersonCount()">Descargar Conteo de Repartidores</button>
-</div>
-
-<!-- Tabla para mostrar los pedidos registrados -->
-<div id="orderTableContainer">
-    <table>
-        <thead>
-            <tr>
-                <th>Referencia</th>
-                <th>Costo de Delivery (C$)</th>
-                <th>Nombre de Repartidor</th>
-                <th>Tipo de Pedido</th>
-            </tr>
-        </thead>
-        <tbody id="orderTable"></tbody>
-        <tfoot>
-            <tr>
-                <td colspan="2" class="total">Total Diario de Pedidos</td>
-                <td id="dailyTotal">0</td>
-                <td></td>
-            </tr>
-        </tfoot>
-    </table>
-</div>
 
 <script>
     let orders = JSON.parse(localStorage.getItem('orders')) || [];
     let deliveryPersons = JSON.parse(localStorage.getItem('deliveryPersons')) || [];
-    let promotions = JSON.parse(localStorage.getItem('promotions')) || [];
 
     document.getElementById('currentDay').textContent = `Día: ${new Date().toLocaleString('es-ES', { weekday: 'long' })}`;
 
@@ -225,10 +130,8 @@
         localStorage.setItem('orders', JSON.stringify(orders));
         this.reset();
         renderOrders();
-        updateOrderSelect();
-        updateDeliveryPersonCount();
+        updateDeliveryPersonTables();
         updateStatistics();
-        updateDeliveryPersonList();
     });
 
     function clearAllOrders() {
@@ -236,8 +139,7 @@
             orders = [];
             localStorage.setItem('orders', JSON.stringify(orders));
             renderOrders();
-            updateOrderSelect();
-            updateDeliveryPersonCount();
+            updateDeliveryPersonTables();
             updateStatistics();
         }
     }
@@ -247,102 +149,73 @@
         if (deliveryPersonName && !deliveryPersons.includes(deliveryPersonName)) {
             deliveryPersons.push(deliveryPersonName);
             localStorage.setItem('deliveryPersons', JSON.stringify(deliveryPersons));
-            updateDeliveryPersonList();
-            updateDeliveryPersonSelect();
+            updateDeliveryPersonTables();
             document.getElementById('newDeliveryPersonName').value = '';
         } else if (deliveryPersons.includes(deliveryPersonName)) {
             alert("El repartidor ya existe.");
         }
     }
 
-    function updateDeliveryPersonList() {
-        const deliveryPersonListBody = document.getElementById('deliveryPersonList');
-        deliveryPersonListBody.innerHTML = '';
-        deliveryPersons.forEach((name) => {
-            const totalCost = calculateTotalCostByDeliveryPerson(name);
-            const totalOrders = calculateOrderCountByDeliveryPerson(name);
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${name}</td>
-                <td><button onclick="removeDeliveryPerson('${name}')">Eliminar</button></td>
-                <td>${totalOrders} Pedidos, C$ ${totalCost.toFixed(2)}</td>
-                <td><button onclick="alertTotalByDeliveryPerson('${name}')">Sumar</button></td>
+    function updateDeliveryPersonTables() {
+        const container = document.getElementById('deliveryPersonTablesContainer');
+        container.innerHTML = ''; // Limpiar el contenedor
+
+        deliveryPersons.forEach(name => {
+            const table = document.createElement('table');
+            table.innerHTML = `
+                <thead>
+                    <tr>
+                        <th>Referencia</th>
+                        <th>Costo de Delivery (C$)</th>
+                        <th>Tipo de Pedido</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="table-${name}"></tbody>
             `;
-            deliveryPersonListBody.appendChild(row);
+            container.appendChild(table);
+            renderOrdersForDeliveryPerson(name);
         });
     }
 
-    function calculateTotalCostByDeliveryPerson(name) {
-        return orders.filter(order => order.deliveryPersonName === name).reduce((total, order) => total + order.cash, 0);
-    }
-
-    function calculateOrderCountByDeliveryPerson(name) {
-        return orders.filter(order => order.deliveryPersonName === name).length;
-    }
-
-    function alertTotalByDeliveryPerson(name) {
-        const totalCost = calculateTotalCostByDeliveryPerson(name);
-        alert(`Total Costo para ${name}: C$ ${totalCost.toFixed(2)}`);
-    }
-
-    function removeDeliveryPerson(name) {
-        deliveryPersons = deliveryPersons.filter(dp => dp !== name);
-        localStorage.setItem('deliveryPersons', JSON.stringify(deliveryPersons));
-        updateDeliveryPersonList();
-        updateDeliveryPersonSelect();
-        updateDeliveryPersonCount();
-    }
-
-    function renderOrders() {
-        const tableBody = document.getElementById('orderTable');
+    function renderOrdersForDeliveryPerson(name) {
+        const tableBody = document.getElementById(`table-${name}`);
         tableBody.innerHTML = '';
-        let dailyTotal = 0;
+        let totalCost = 0;
 
-        orders.forEach((order) => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${order.pickup}</td>
-                <td>${order.cash.toFixed(2)} C$</td>
-                <td>${order.deliveryPersonName}</td>
-                <td>${order.orderType}</td>
-            `;
-            tableBody.appendChild(row);
-            dailyTotal += order.cash;
-        });
-
-        document.getElementById('dailyTotal').textContent = dailyTotal.toFixed(2) + ' C$';
-    }
-
-    function updateDeliveryPersonCount() {
-        const deliveryPersonCount = {};
         orders.forEach(order => {
-            if (deliveryPersonCount[order.deliveryPersonName]) {
-                deliveryPersonCount[order.deliveryPersonName].count++;
-                deliveryPersonCount[order.deliveryPersonName].total += order.cash;
-            } else {
-                deliveryPersonCount[order.deliveryPersonName] = { count: 1, total: order.cash };
+            if (order.deliveryPersonName === name) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${order.pickup}</td>
+                    <td>${order.cash.toFixed(2)} C$</td>
+                    <td>${order.orderType}</td>
+                    <td>
+                        <button onclick="deleteOrder('${order.pickup}')">Eliminar</button>
+                        <button onclick="sendOrderToWhatsApp('${order.pickup}', '${order.cash}', '${name}', '${order.orderType}')">Enviar a WhatsApp</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+                totalCost += order.cash;
             }
         });
 
-        const deliveryPersonCountTableBody = document.getElementById('deliveryPersonCountTable');
-        deliveryPersonCountTableBody.innerHTML = '';
-
-        for (const [name, data] of Object.entries(deliveryPersonCount)) {
-            const row = document.createElement('tr');
-            row.innerHTML = `<td>${name}</td><td>${data.count}</td><td>${data.total.toFixed(2)} C$</td>`;
-            deliveryPersonCountTableBody.appendChild(row);
-        }
+        const totalRow = document.createElement('tr');
+        totalRow.innerHTML = `<td colspan="2">Total para ${name}:</td><td>${totalCost.toFixed(2)} C$</td><td></td>`;
+        tableBody.appendChild(totalRow);
     }
 
-    function updateOrderSelect() {
-        const orderSelect = document.getElementById('orderSelect');
-        orderSelect.innerHTML = '';
-        orders.forEach((order, index) => {
-            const option = document.createElement('option');
-            option.value = index;
-            option.textContent = `Pedido ${index + 1}`;
-            orderSelect.appendChild(option);
-        });
+    function sendOrderToWhatsApp(reference, cash, deliveryPerson, orderType) {
+        const message = `Nuevo Pedido:\nReferencia: ${reference}\nCosto de Delivery: C$ ${cash.toFixed(2)}\nNombre de Repartidor: ${deliveryPerson}\nTipo de Pedido: ${orderType}`;
+        const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+        window.open(whatsappUrl, '_blank');
+    }
+
+    function deleteOrder(reference) {
+        orders = orders.filter(order => order.pickup !== reference);
+        localStorage.setItem('orders', JSON.stringify(orders));
+        updateDeliveryPersonTables();
+        updateStatistics();
     }
 
     function calculateTotalEarnings() {
@@ -368,11 +241,6 @@
         document.getElementById('totalOrders').textContent = `Total de Pedidos: ${totalOrders}`;
         document.getElementById('totalEarnings').textContent = `Total Ganancias: ${totalEarnings.toFixed(2)} C$`;
         document.getElementById('mostActiveDeliveryPerson').textContent = `Repartidor Más Activo: ${mostActiveDeliveryPerson || 'Ninguno'}`;
-    }
-
-    function addPromotion() {
-        const promotionName = document.getElementById('promotionName').value.trim();
-        // Código para añadir promoción...
     }
 </script>
 
