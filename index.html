@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -107,6 +108,13 @@
             font-weight: bold;
             background-color: #e0e0e0;
         }
+
+        /* Estilo para el historial de deliverys */
+        .historial {
+            margin-top: 40px;
+            border-top: 2px solid #2196F3;
+            padding-top: 20px;
+        }
     </style>
 </head>
 <body>
@@ -127,8 +135,12 @@
             <label>Costo del Delivery (C$):</label>
             <input type="number" id="costo" placeholder="Costo en C$">
 
-            <label>Motorizado:</label>
-            <input type="text" id="motorizado" placeholder="Nombre del motorizado">
+            <label>Seleccionar Motorizado:</label>
+            <select id="motorizadoSelect">
+                <option value="">-- Selecciona un Motorizado --</option>
+            </select>
+            <input type="text" id="nuevoMotorizado" placeholder="Agregar nuevo motorizado">
+            <button onclick="agregarMotorizado()">Agregar Motorizado</button>
 
             <label>Tipo de Delivery:</label>
             <select id="tipoDelivery">
@@ -138,7 +150,12 @@
             </select>
 
             <button onclick="registrarDelivery()">Registrar Delivery</button>
-            <button onclick="confirmarEliminar()">Limpiar Todos los Deliverys</button>
+
+            <label>Seleccionar Delivery para enviar:</label>
+            <select id="deliverySelect" onchange="mostrarBotonWhatsApp()">
+                <option value="">-- Selecciona un Delivery --</option>
+            </select>
+            <button id="whatsappButton" onclick="enviarWhatsApp()" style="display:none;">Enviar por WhatsApp</button>
         </div>
 
         <div class="confirm-delete" id="confirmDelete">
@@ -147,14 +164,17 @@
             <button onclick="cancelarEliminar()">No</button>
         </div>
 
-        <label>Seleccionar Delivery para enviar:</label>
-        <select id="deliverySelect" onchange="mostrarBotonWhatsApp()">
-            <option value="">-- Selecciona un Delivery --</option>
-        </select>
-        <button id="whatsappButton" onclick="enviarWhatsApp()" style="display:none;">Enviar por WhatsApp</button>
-
         <!-- Contenedor de tablas de deliverys por motorizado -->
         <div id="deliverysContainer"></div>
+
+        <!-- Sección de historial de deliverys -->
+        <div class="historial" id="historial">
+            <h2>Historial de Deliverys</h2>
+            <div id="historialContainer"></div>
+        </div>
+
+        <button onclick="confirmarEliminar()">Limpiar Todos los Deliverys</button>
+        <button onclick="limpiarHistorial()">Limpiar Historial</button>
     </div>
 
     <script>
@@ -198,13 +218,23 @@
 
                 document.getElementById("deliverysContainer").innerHTML += table;
             }
+
+            // Actualizar el selector de motorizados
+            const motorizadoSelect = document.getElementById("motorizadoSelect");
+            motorizadoSelect.innerHTML = '<option value="">-- Selecciona un Motorizado --</option>'; // Reiniciar el selector
+            for (let motorizado in deliverys) {
+                const option = document.createElement("option");
+                option.value = motorizado;
+                option.textContent = motorizado;
+                motorizadoSelect.appendChild(option);
+            }
         }
 
         // Función para registrar un delivery
         function registrarDelivery() {
             const referencia = document.getElementById("referencia").value;
             const costo = parseFloat(document.getElementById("costo").value);
-            const motorizado = document.getElementById("motorizado").value;
+            const motorizado = document.getElementById("motorizadoSelect").value;
             const tipoDelivery = document.getElementById("tipoDelivery").value;
 
             if (!referencia || isNaN(costo) || !motorizado || !tipoDelivery) {
@@ -219,7 +249,29 @@
             deliverys[motorizado].push(delivery);
 
             localStorage.setItem("deliverys", JSON.stringify(deliverys));
-            cargarDeliverys();
+            cargarDeliverys(); // Cargar deliverys para refrescar el selector
+            agregarHistorial(delivery, motorizado); // Agregar al historial con el motorizado
+        }
+
+        // Función para agregar un motorizado
+        function agregarMotorizado() {
+            const motorizado = document.getElementById("nuevoMotorizado").value;
+            if (!motorizado) {
+                alert("Por favor, ingrese un nombre de motorizado.");
+                return;
+            }
+
+            const deliverys = JSON.parse(localStorage.getItem("deliverys")) || {};
+            if (!deliverys[motorizado]) {
+                deliverys[motorizado] = [];
+                localStorage.setItem("deliverys", JSON.stringify(deliverys));
+                alert("Motorizado agregado exitosamente.");
+            } else {
+                alert("Este motorizado ya existe.");
+            }
+
+            document.getElementById("nuevoMotorizado").value = ""; // Limpiar el campo
+            cargarDeliverys(); // Actualizar el selector de motorizados
         }
 
         // Función para enviar datos por WhatsApp
@@ -246,6 +298,14 @@
             document.getElementById("whatsappButton").style.display = deliverySelect.value ? "block" : "none";
         }
 
+        // Función para agregar al historial
+        function agregarHistorial(delivery, motorizado) {
+            const historialContainer = document.getElementById("historialContainer");
+            const historialItem = document.createElement("div");
+            historialItem.textContent = `Referencia: ${delivery.referencia}, Costo: C$ ${delivery.costo}, Tipo: ${delivery.tipo} (Motorizado: ${motorizado})`;
+            historialContainer.appendChild(historialItem);
+        }
+
         // Función para confirmar eliminación de datos
         function confirmarEliminar() {
             document.getElementById("confirmDelete").style.display = "block";
@@ -261,6 +321,12 @@
             localStorage.removeItem("deliverys");
             document.getElementById("confirmDelete").style.display = "none";
             cargarDeliverys();
+        }
+
+        // Función para limpiar el historial
+        function limpiarHistorial() {
+            const historialContainer = document.getElementById("historialContainer");
+            historialContainer.innerHTML = ""; // Limpiar el historial
         }
 
         // Cargar deliverys al iniciar
