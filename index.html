@@ -86,34 +86,39 @@
             text-align: center;
         }
 
-        /* Tabla de deliverys */
-        .motorizado-table {
+        /* Estilos de la tabla */
+        .historial-table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
-            text-align: center;
+            text-align: left;
         }
 
-        .motorizado-table th, .motorizado-table td {
+        .historial-table th, .historial-table td {
             border: 1px solid #ddd;
             padding: 8px;
         }
 
-        .motorizado-table th {
+        .historial-table th {
             background-color: #f2f2f2;
             font-weight: bold;
         }
 
-        .motorizado-header {
-            font-weight: bold;
-            background-color: #e0e0e0;
+        .historial-table tr:hover {
+            background-color: #f5f5f5;
         }
 
-        /* Estilo para el historial de deliverys */
-        .historial {
-            margin-top: 40px;
-            border-top: 2px solid #2196F3;
-            padding-top: 20px;
+        .delete-button {
+            background-color: #d9534f; /* Rojo */
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .delete-button:hover {
+            background-color: #c9302c; /* Rojo oscuro */
         }
     </style>
 </head>
@@ -170,7 +175,18 @@
         <!-- Sección de historial de deliverys -->
         <div class="historial" id="historial">
             <h2>Historial de Deliverys</h2>
-            <div id="historialContainer"></div>
+            <table class="historial-table" id="historialTable">
+                <thead>
+                    <tr>
+                        <th>Referencia</th>
+                        <th>Costo</th>
+                        <th>Tipo</th>
+                        <th>Motorizado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="historialContainer"></tbody>
+            </table>
         </div>
 
         <button onclick="confirmarEliminar()">Limpiar Todos los Deliverys</button>
@@ -251,6 +267,10 @@
             localStorage.setItem("deliverys", JSON.stringify(deliverys));
             cargarDeliverys(); // Cargar deliverys para refrescar el selector
             agregarHistorial(delivery, motorizado); // Agregar al historial con el motorizado
+
+            // Limpiar campos del formulario
+            document.getElementById("referencia").value = '';
+            document.getElementById("costo").value = '';
         }
 
         // Función para agregar un motorizado
@@ -301,9 +321,23 @@
         // Función para agregar al historial
         function agregarHistorial(delivery, motorizado) {
             const historialContainer = document.getElementById("historialContainer");
-            const historialItem = document.createElement("div");
-            historialItem.textContent = `Referencia: ${delivery.referencia}, Costo: C$ ${delivery.costo}, Tipo: ${delivery.tipo} (Motorizado: ${motorizado})`;
+            const historialItem = document.createElement("tr");
+
+            historialItem.innerHTML = `
+                <td>${delivery.referencia}</td>
+                <td>C$ ${delivery.costo}</td>
+                <td>${delivery.tipo}</td>
+                <td>${motorizado}</td>
+                <td><button class="delete-button" onclick="eliminarHistorial(this)">Eliminar</button></td>
+            `;
+
             historialContainer.appendChild(historialItem);
+        }
+
+        // Función para eliminar una fila del historial
+        function eliminarHistorial(button) {
+            const row = button.parentNode.parentNode; // Obtener la fila del botón
+            row.parentNode.removeChild(row); // Eliminar la fila de la tabla
         }
 
         // Función para confirmar eliminación de datos
