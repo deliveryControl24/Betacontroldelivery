@@ -164,19 +164,6 @@
     </table>
 </div>
 
-<!-- Seleccionar pedido para guardar como voucher -->
-<h2>Seleccionar Pedido para Guardar</h2>
-<label for="orderSelect">Selecciona el Pedido:</label>
-<select id="orderSelect"></select>
-<label for="fileFormat">Seleccionar Formato:</label>
-<select id="fileFormat">
-    <option value="pdf">PDF</option>
-    <option value="jpg">JPG</option>
-    <option value="txt">TXT</option>
-</select>
-<button onclick="exportSelectedOrderAsVoucher()">Guardar Pedido</button>
-<button onclick="sendOrderToWhatsApp()">Enviar Pedido a WhatsApp</button>
-
 <!-- Sección para mostrar ganancias del día -->
 <div id="totalEarningsDisplay">Total Ganancias: 0 C$</div>
 <button onclick="calculateTotalEarnings()">Calcular Total Ganancias del Día</button>
@@ -219,23 +206,6 @@
     </table>
 </div>
 
-<!-- Historial de pedidos -->
-<div id="historyContainer">
-    <h2>Historial de Pedidos</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Referencia</th>
-                <th>Costo de Delivery (C$)</th>
-                <th>Nombre de Repartidor</th>
-                <th>Tipo de Pedido</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody id="historyTable"></tbody>
-    </table>
-</div>
-
 <script>
     let orders = JSON.parse(localStorage.getItem('orders')) || [];
     let deliveryPersons = JSON.parse(localStorage.getItem('deliveryPersons')) || [];
@@ -255,10 +225,8 @@
         localStorage.setItem('orders', JSON.stringify(orders));
         this.reset();
         renderOrders();
-        renderHistory();
         updateOrderSelect();
         updateDeliveryPersonCount();
-        updateOrderSummary();
         updateStatistics();
         updateDeliveryPersonList();
     });
@@ -268,7 +236,6 @@
             orders = [];
             localStorage.setItem('orders', JSON.stringify(orders));
             renderOrders();
-            renderHistory();
             updateOrderSelect();
             updateDeliveryPersonCount();
             updateStatistics();
@@ -292,13 +259,13 @@
         const deliveryPersonListBody = document.getElementById('deliveryPersonList');
         deliveryPersonListBody.innerHTML = '';
         deliveryPersons.forEach((name) => {
-            const row = document.createElement('tr');
             const totalCost = calculateTotalCostByDeliveryPerson(name);
             const totalOrders = calculateOrderCountByDeliveryPerson(name);
+            const row = document.createElement('tr');
             row.innerHTML = `
                 <td>${name}</td>
-                <td><button onclick="removeDeliveryPerson(${index})">Eliminar</button></td>
-                <td>${totalOrders} Pedidos</td>
+                <td><button onclick="removeDeliveryPerson('${name}')">Eliminar</button></td>
+                <td>${totalOrders} Pedidos, C$ ${totalCost.toFixed(2)}</td>
                 <td><button onclick="alertTotalByDeliveryPerson('${name}')">Sumar</button></td>
             `;
             deliveryPersonListBody.appendChild(row);
@@ -315,22 +282,11 @@
 
     function alertTotalByDeliveryPerson(name) {
         const totalCost = calculateTotalCostByDeliveryPerson(name);
-        alert(`Total Costo para ${name}: C$ ${totalCost}`);
+        alert(`Total Costo para ${name}: C$ ${totalCost.toFixed(2)}`);
     }
 
-    function updateDeliveryPersonSelect() {
-        const deliveryPersonSelect = document.getElementById('deliveryPersonSelect');
-        deliveryPersonSelect.innerHTML = '<option value="">Seleccione un Repartidor</option>';
-        deliveryPersons.forEach(name => {
-            const option = document.createElement('option');
-            option.value = name;
-            option.textContent = name;
-            deliveryPersonSelect.appendChild(option);
-        });
-    }
-
-    function removeDeliveryPerson(index) {
-        deliveryPersons.splice(index, 1);
+    function removeDeliveryPerson(name) {
+        deliveryPersons = deliveryPersons.filter(dp => dp !== name);
         localStorage.setItem('deliveryPersons', JSON.stringify(deliveryPersons));
         updateDeliveryPersonList();
         updateDeliveryPersonSelect();
@@ -346,7 +302,7 @@
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td>${order.pickup}</td>
-                <td>${order.cash} C$</td>
+                <td>${order.cash.toFixed(2)} C$</td>
                 <td>${order.deliveryPersonName}</td>
                 <td>${order.orderType}</td>
             `;
@@ -354,24 +310,7 @@
             dailyTotal += order.cash;
         });
 
-        document.getElementById('dailyTotal').textContent = dailyTotal + ' C$';
-    }
-
-    function renderHistory() {
-        const historyTableBody = document.getElementById('historyTable');
-        historyTableBody.innerHTML = '';
-
-        orders.forEach((order, index) => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${order.pickup}</td>
-                <td>${order.cash} C$</td>
-                <td>${order.deliveryPersonName}</td>
-                <td>${order.orderType}</td>
-                <td><button onclick="deleteOrder(${index})">Eliminar</button></td>
-            `;
-            historyTableBody.appendChild(row);
-        });
+        document.getElementById('dailyTotal').textContent = dailyTotal.toFixed(2) + ' C$';
     }
 
     function updateDeliveryPersonCount() {
@@ -390,19 +329,9 @@
 
         for (const [name, data] of Object.entries(deliveryPersonCount)) {
             const row = document.createElement('tr');
-            row.innerHTML = `<td>${name}</td><td>${data.count}</td><td>${data.total} C$</td>`;
+            row.innerHTML = `<td>${name}</td><td>${data.count}</td><td>${data.total.toFixed(2)} C$</td>`;
             deliveryPersonCountTableBody.appendChild(row);
         }
-    }
-
-    function deleteOrder(index) {
-        orders.splice(index, 1);
-        localStorage.setItem('orders', JSON.stringify(orders));
-        renderOrders();
-        renderHistory();
-        updateOrderSelect();
-        updateDeliveryPersonCount();
-        updateStatistics();
     }
 
     function updateOrderSelect() {
@@ -416,56 +345,9 @@
         });
     }
 
-    async function exportSelectedOrderAsVoucher() {
-        const selectedOrderIndex = document.getElementById('orderSelect').value;
-        const order = orders[selectedOrderIndex];
-        const voucherContainer = document.createElement('div');
-        voucherContainer.className = 'voucher';
-        voucherContainer.innerHTML = `
-            <h2>Voucher de Pedido</h2>
-            <p><strong>Referencia:</strong> ${order.pickup}</p>
-            <p><strong>Costo de Delivery:</strong> ${order.cash} C$</p>
-            <p><strong>Nombre de Repartidor:</strong> ${order.deliveryPersonName}</p>
-            <p><strong>Tipo de Pedido:</strong> ${order.orderType}</p>
-        `;
-        
-        document.body.appendChild(voucherContainer);
-        const canvas = await html2canvas(voucherContainer);
-        const imgData = canvas.toDataURL("image/png");
-        document.body.removeChild(voucherContainer);
-
-        const fileFormat = document.getElementById('fileFormat').value;
-        if (fileFormat === 'pdf') {
-            const { jsPDF } = window.jspdf;
-            const pdf = new jsPDF('p', 'mm', 'a4');
-            pdf.addImage(imgData, 'PNG', 10, 10, 190, 0);
-            pdf.save(`voucher_pedido_${parseInt(selectedOrderIndex) + 1}.pdf`);
-        } else if (fileFormat === 'txt') {
-            const textBlob = new Blob([JSON.stringify(order)], { type: 'text/plain' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(textBlob);
-            link.download = `voucher_pedido_${parseInt(selectedOrderIndex) + 1}.txt`;
-            link.click();
-        } else {
-            const link = document.createElement('a');
-            link.href = imgData;
-            link.download = `voucher_pedido_${parseInt(selectedOrderIndex) + 1}.jpg`;
-            link.click();
-        }
-    }
-
-    function sendOrderToWhatsApp() {
-        const selectedOrderIndex = document.getElementById('orderSelect').value;
-        const order = orders[selectedOrderIndex];
-
-        const message = `Nuevo Pedido:\n` +
-                        `Referencia: ${order.pickup}\n` +
-                        `Costo de Delivery: ${order.cash} C$\n` +
-                        `Nombre de Repartidor: ${order.deliveryPersonName}\n` +
-                        `Tipo de Pedido: ${order.orderType}`;
-
-        const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
-        window.open(whatsappUrl, '_blank');
+    function calculateTotalEarnings() {
+        const totalEarnings = orders.reduce((total, order) => total + order.cash, 0);
+        alert(`Total Ganancias del Día: C$ ${totalEarnings.toFixed(2)}`);
     }
 
     function updateStatistics() {
@@ -484,13 +366,8 @@
         const mostActiveDeliveryPerson = Object.keys(deliveryPersonCount).reduce((a, b) => deliveryPersonCount[a] > deliveryPersonCount[b] ? a : b, '');
 
         document.getElementById('totalOrders').textContent = `Total de Pedidos: ${totalOrders}`;
-        document.getElementById('totalEarnings').textContent = `Total Ganancias: ${totalEarnings} C$`;
+        document.getElementById('totalEarnings').textContent = `Total Ganancias: ${totalEarnings.toFixed(2)} C$`;
         document.getElementById('mostActiveDeliveryPerson').textContent = `Repartidor Más Activo: ${mostActiveDeliveryPerson || 'Ninguno'}`;
-    }
-
-    function calculateTotalEarnings() {
-        const totalEarnings = orders.reduce((total, order) => total + order.cash, 0);
-        alert(`Total Ganancias del Día: C$ ${totalEarnings}`);
     }
 
     function addPromotion() {
