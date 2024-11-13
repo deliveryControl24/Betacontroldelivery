@@ -133,6 +133,8 @@
             <tr>
                 <th>Nombre de Repartidor</th>
                 <th>Acciones</th>
+                <th>Totales</th>
+                <th>Sumar</th>
             </tr>
         </thead>
         <tbody id="deliveryPersonList"></tbody>
@@ -177,6 +179,7 @@
 
 <!-- Sección para mostrar ganancias del día -->
 <div id="totalEarningsDisplay">Total Ganancias: 0 C$</div>
+<button onclick="calculateTotalEarnings()">Calcular Total Ganancias del Día</button>
 
 <!-- Conteo de pedidos por repartidor -->
 <h2>Conteo de Pedidos por Repartidor</h2>
@@ -257,6 +260,7 @@
         updateDeliveryPersonCount();
         updateOrderSummary();
         updateStatistics();
+        updateDeliveryPersonList();
     });
 
     function clearAllOrders() {
@@ -287,14 +291,31 @@
     function updateDeliveryPersonList() {
         const deliveryPersonListBody = document.getElementById('deliveryPersonList');
         deliveryPersonListBody.innerHTML = '';
-        deliveryPersons.forEach((name, index) => {
+        deliveryPersons.forEach((name) => {
             const row = document.createElement('tr');
+            const totalCost = calculateTotalCostByDeliveryPerson(name);
+            const totalOrders = calculateOrderCountByDeliveryPerson(name);
             row.innerHTML = `
                 <td>${name}</td>
                 <td><button onclick="removeDeliveryPerson(${index})">Eliminar</button></td>
+                <td>${totalOrders} Pedidos</td>
+                <td><button onclick="alertTotalByDeliveryPerson('${name}')">Sumar</button></td>
             `;
             deliveryPersonListBody.appendChild(row);
         });
+    }
+
+    function calculateTotalCostByDeliveryPerson(name) {
+        return orders.filter(order => order.deliveryPersonName === name).reduce((total, order) => total + order.cash, 0);
+    }
+
+    function calculateOrderCountByDeliveryPerson(name) {
+        return orders.filter(order => order.deliveryPersonName === name).length;
+    }
+
+    function alertTotalByDeliveryPerson(name) {
+        const totalCost = calculateTotalCostByDeliveryPerson(name);
+        alert(`Total Costo para ${name}: C$ ${totalCost}`);
     }
 
     function updateDeliveryPersonSelect() {
@@ -465,6 +486,11 @@
         document.getElementById('totalOrders').textContent = `Total de Pedidos: ${totalOrders}`;
         document.getElementById('totalEarnings').textContent = `Total Ganancias: ${totalEarnings} C$`;
         document.getElementById('mostActiveDeliveryPerson').textContent = `Repartidor Más Activo: ${mostActiveDeliveryPerson || 'Ninguno'}`;
+    }
+
+    function calculateTotalEarnings() {
+        const totalEarnings = orders.reduce((total, order) => total + order.cash, 0);
+        alert(`Total Ganancias del Día: C$ ${totalEarnings}`);
     }
 
     function addPromotion() {
