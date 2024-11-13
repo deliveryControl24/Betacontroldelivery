@@ -4,245 +4,360 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Registro y Facturación de Pedidos</title>
+    <title>Registro de Pedido de Delivery Express</title>
     <style>
-        body { 
-            font-family: 'Roboto', sans-serif; 
-            background-color: #f5f5f5; 
-            margin: 0; 
-            padding: 20px; 
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
         }
-        h1, h2 { 
-            color: #333; 
-            text-align: center; 
-            margin-bottom: 10px; 
-        }
-        img.logo {
-            display: block;
-            margin: 0 auto 20px; 
-            max-width: 100%; 
-            height: auto; 
-        }
-        form, .card, table {
-            width: 100%; 
-            max-width: 600px; 
-            margin: auto; 
-            background-color: #fff; 
+
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background-color: #fff;
+            padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-            padding: 15px;
-            margin-bottom: 20px;
-            box-sizing: border-box; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 10px; border: 1px solid #ddd; text-align: left; }
-        th { background-color: #f0f0f0; }
-        button { 
-            background-color: #6200ea; 
-            color: #fff; 
-            border: none; 
-            padding: 10px; 
-            border-radius: 4px; 
-            cursor: pointer; 
-            width: 100%; 
-            transition: background-color 0.3s; 
-            margin-top: 10px; 
-        }
-        button:hover { background-color: #3700b3; }
-        input, select { 
-            border: 1px solid #ccc; 
-            border-radius: 4px; 
-            padding: 10px; 
-            width: 100%; 
-            margin: 8px 0; 
-            box-sizing: border-box; 
-        }
-        .statistics {
+
+        h1, h2 {
+            color: #333;
             text-align: center;
-            margin-bottom: 20px;
         }
-        @media (max-width: 600px) {
-            button { padding: 8px; }
-            th, td { padding: 8px; }
+
+        .logo {
+            display: block;
+            margin: 0 auto 20px;
+            width: 100px; /* Ajusta el tamaño según sea necesario */
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .btn {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        .btn-clear {
+            background-color: #dc3545;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .confirmation {
+            background-color: #ffc107;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        .summary-table {
+            margin-top: 40px;
         }
     </style>
 </head>
 <body>
+    <div class="container">
+        <img src="logo.jpg" alt="Logo" class="logo">
+        <h1>Registro de Pedido de Delivery Express</h1>
+        <form id="orderForm">
+            <div class="form-group">
+                <label for="reference">Referencia:</label>
+                <input type="text" id="reference" required>
+            </div>
+            <div class="form-group">
+                <label for="cost">Costo del Pedido (C$):</label>
+                <input type="number" id="cost" required>
+            </div>
+            <div class="form-group">
+                <label for="motorized">Selecciona el Motorizado:</label>
+                <select id="motorized" required>
+                    <option value="">Seleccione</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="newMotorized">Agregar Nuevo Motorizado:</label>
+                <input type="text" id="newMotorized" placeholder="Nombre del Motorizado">
+                <button type="button" id="addMotorized" class="btn">Agregar</button>
+            </div>
+            <div class="form-group">
+                <label for="orderType">Tipo de Pedido:</label>
+                <select id="orderType" required>
+                    <option value="normal">Delivery Normal</option>
+                    <option value="promo">Delivery Promo</option>
+                    <option value="gratis">Delivery Gratis</option>
+                </select>
+            </div>
+            <button type="submit" class="btn">Registrar Pedido</button>
+            <button type="button" id="clearData" class="btn btn-clear">Limpiar Información</button>
+        </form>
+        
+        <div id="confirmation" class="confirmation" style="display:none;">
+            <p>¿Está seguro de que desea eliminar toda la información?</p>
+            <button id="confirmClear" class="btn">Sí</button>
+            <button id="cancelClear" class="btn btn-cancel">No</button>
+        </div>
+        
+        <h2>Pedidos Registrados</h2>
+        <table id="orderTable">
+            <thead>
+                <tr>
+                    <th>Referencia</th>
+                    <th>Costo (C$)</th>
+                    <th>Motorizado</th>
+                    <th>Tipo de Pedido</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Aquí se añadirán las filas de pedidos -->
+            </tbody>
+        </table>
 
-<img src="logo.jpg" alt="Logo" class="logo"> 
-
-<h1>Sistema de Registro y Facturación de Pedidos</h1>
-<h2 id="currentDay"></h2>
-
-<div class="statistics">
-    <h2>Estadísticas</h2>
-    <p id="totalOrders">Total de Pedidos: 0</p>
-    <p id="totalEarnings">Total Ganancias: 0 C$</p>
-    <p id="mostActiveDeliveryPerson">Repartidor Más Activo: Ninguno</p>
-</div>
-
-<form id="orderForm">
-    <h2>Registrar Nuevo Pedido</h2>
-    <label>Referencia: <input type="text" id="pickup" required></label>
-    <label>Costo de Delivery (C$): <input type="number" id="cash" min="0" required></label>
-    <label>Nombre de Repartidor: 
-        <input type="text" id="deliveryPersonInput" placeholder="Buscar Repartidor" required>
-        <select id="deliveryPersonSelect" style="display: none;"></select>
-    </label>
-    <label>Tipo de Pedido: 
-        <select id="orderType">
-            <option value="">Seleccione un tipo de pedido (opcional)</option>
-            <option value="normal">Pedidos Normales</option>
-            <option value="promotion">Pedidos en Promoción o Descuento</option>
-            <option value="freeDelivery">Delivery Gratis</option>
-        </select>
-    </label>
-    <button type="submit">Añadir Pedido</button>
-    <button type="button" onclick="clearAllOrders()">Limpiar/Borrar</button>
-</form>
-
-<h2>Guardar Repartidor</h2>
-<form id="deliveryPersonForm">
-    <label>Nombre de Repartidor: <input type="text" id="newDeliveryPersonName" required></label>
-    <button type="button" onclick="addDeliveryPerson()">Añadir Repartidor</button>
-</form>
-
-<div id="deliveryPersonTablesContainer"></div>
-
-<div id="totalEarningsDisplay">Total Ganancias: 0 C$</div>
-<button onclick="calculateTotalEarnings()">Calcular Total Ganancias del Día</button>
-
-<script>
-    let orders = JSON.parse(localStorage.getItem('orders')) || [];
-    let deliveryPersons = JSON.parse(localStorage.getItem('deliveryPersons')) || [];
-
-    document.getElementById('currentDay').textContent = `Día: ${new Date().toLocaleString('es-ES', { weekday: 'long' })}`;
-
-    document.getElementById('orderForm').addEventListener('submit', function(event) {
-        event.preventDefault();
-        const order = {
-            pickup: this.pickup.value,
-            cash: parseFloat(this.cash.value),
-            deliveryPersonName: document.getElementById('deliveryPersonInput').value,
-            orderType: document.getElementById('orderType').value || "Normal",
-        };
-        orders.push(order);
-        localStorage.setItem('orders', JSON.stringify(orders));
-        this.reset();
-        renderOrders();
-        updateDeliveryPersonTables();
-        updateStatistics();
-    });
-
-    function clearAllOrders() {
-        if (confirm("¿Está seguro de que desea eliminar todos los pedidos?")) {
-            orders = [];
-            localStorage.setItem('orders', JSON.stringify(orders));
-            renderOrders();
-            updateDeliveryPersonTables();
-            updateStatistics();
-        }
-    }
-
-    function addDeliveryPerson() {
-        const deliveryPersonName = document.getElementById('newDeliveryPersonName').value.trim();
-        if (deliveryPersonName && !deliveryPersons.includes(deliveryPersonName)) {
-            deliveryPersons.push(deliveryPersonName);
-            localStorage.setItem('deliveryPersons', JSON.stringify(deliveryPersons));
-            updateDeliveryPersonTables();
-            document.getElementById('newDeliveryPersonName').value = '';
-        } else if (deliveryPersons.includes(deliveryPersonName)) {
-            alert("El repartidor ya existe.");
-        }
-    }
-
-    function updateDeliveryPersonTables() {
-        const container = document.getElementById('deliveryPersonTablesContainer');
-        container.innerHTML = ''; // Limpiar el contenedor
-
-        deliveryPersons.forEach(name => {
-            const table = document.createElement('table');
-            table.innerHTML = `
+        <div class="summary-table">
+            <h2>Resumen de Pedidos</h2>
+            <table id="summaryTable">
                 <thead>
                     <tr>
-                        <th>Referencia</th>
-                        <th>Costo de Delivery (C$)</th>
                         <th>Tipo de Pedido</th>
-                        <th>Acciones</th>
+                        <th>Cantidad</th>
+                        <th>Total (C$)</th>
                     </tr>
                 </thead>
-                <tbody id="table-${name}"></tbody>
-            `;
-            container.appendChild(table);
-            renderOrdersForDeliveryPerson(name);
-        });
-    }
+                <tbody>
+                    <tr>
+                        <td>Delivery Normal</td>
+                        <td id="normalCount">0</td>
+                        <td id="normalTotal">0</td>
+                    </tr>
+                    <tr>
+                        <td>Delivery Promo</td>
+                        <td id="promoCount">0</td>
+                        <td id="promoTotal">0</td>
+                    </tr>
+                    <tr>
+                        <td>Delivery Gratis</td>
+                        <td id="gratisCount">0</td>
+                        <td id="gratisTotal">0</td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th>Total General</th>
+                        <th id="totalCount">0</th>
+                        <th id="totalMoney">0</th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const orderForm = document.getElementById('orderForm');
+            const orderTable = document.getElementById('orderTable').getElementsByTagName('tbody')[0];
+            const clearDataBtn = document.getElementById('clearData');
+            const confirmation = document.getElementById('confirmation');
+            const confirmClear = document.getElementById('confirmClear');
+            const cancelClear = document.getElementById('cancelClear');
+            const motorizedSelect = document.getElementById('motorized');
+            const addMotorizedBtn = document.getElementById('addMotorized');
+            const newMotorizedInput = document.getElementById('newMotorized');
 
-    function renderOrdersForDeliveryPerson(name) {
-        const tableBody = document.getElementById(`table-${name}`);
-        tableBody.innerHTML = '';
-        let totalCost = 0;
+            // Contadores y totales
+            const normalCount = document.getElementById('normalCount');
+            const promoCount = document.getElementById('promoCount');
+            const gratisCount = document.getElementById('gratisCount');
+            const normalTotal = document.getElementById('normalTotal');
+            const promoTotal = document.getElementById('promoTotal');
+            const gratisTotal = document.getElementById('gratisTotal');
+            const totalCount = document.getElementById('totalCount');
+            const totalMoney = document.getElementById('totalMoney');
 
-        orders.forEach(order => {
-            if (order.deliveryPersonName === name) {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${order.pickup}</td>
-                    <td>${order.cash.toFixed(2)} C$</td>
+            // Cargar datos del Local Storage
+            loadOrders();
+            loadMotorized();
+
+            orderForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const reference = document.getElementById('reference').value;
+                const cost = parseFloat(document.getElementById('cost').value);
+                const motorized = motorizedSelect.value;
+                const orderType = document.getElementById('orderType').value;
+
+                const order = { reference, cost, motorized, orderType };
+                addOrderToTable(order);
+                updateSummary(orderType, cost);
+                saveOrder(order);
+                orderForm.reset();
+            });
+
+            clearDataBtn.addEventListener('click', () => {
+                confirmation.style.display = 'block';
+            });
+
+            confirmClear.addEventListener('click', () => {
+                localStorage.clear();
+                orderTable.innerHTML = '';
+                motorizedSelect.innerHTML = '<option value="">Seleccione</option>'; // Reset the motorized options
+                resetSummary();
+                confirmation.style.display = 'none';
+            });
+
+            cancelClear.addEventListener('click', () => {
+                confirmation.style.display = 'none';
+            });
+
+            addMotorizedBtn.addEventListener('click', () => {
+                const newMotorized = newMotorizedInput.value.trim();
+                if (newMotorized) {
+                    addMotorized(newMotorized);
+                    newMotorizedInput.value = ''; // Clear input
+                }
+            });
+
+            function addOrderToTable(order) {
+                const newRow = orderTable.insertRow();
+                newRow.innerHTML = `
+                    <td>${order.reference}</td>
+                    <td>${order.cost.toFixed(2)}</td>
+                    <td>${order.motorized}</td>
                     <td>${order.orderType}</td>
-                    <td>
-                        <button onclick="deleteOrder('${order.pickup}')">Eliminar</button>
-                        <button onclick="sendOrderToWhatsApp('${order.pickup}', '${order.cash}', '${name}', '${order.orderType}')">Enviar a WhatsApp</button>
-                    </td>
+                    <td><button onclick="sendWhatsApp('${order.motorized}', '${order.reference}')" class="btn">Enviar a WhatsApp</button></td>
                 `;
-                tableBody.appendChild(row);
-                totalCost += order.cash;
+            }
+
+            function saveOrder(order) {
+                let orders = JSON.parse(localStorage.getItem('orders')) || [];
+                orders.push(order);
+                localStorage.setItem('orders', JSON.stringify(orders));
+            }
+
+            function loadOrders() {
+                let orders = JSON.parse(localStorage.getItem('orders')) || [];
+                orders.forEach(order => {
+                    addOrderToTable(order);
+                    updateSummary(order.orderType, order.cost);
+                });
+            }
+
+            function loadMotorized() {
+                const motorized = JSON.parse(localStorage.getItem('motorized')) || [];
+                motorized.forEach(m => {
+                    const option = document.createElement('option');
+                    option.value = m;
+                    option.textContent = m;
+                    motorizedSelect.appendChild(option);
+                });
+            }
+
+            function addMotorized(name) {
+                let motorized = JSON.parse(localStorage.getItem('motorized')) || [];
+                if (!motorized.includes(name)) {
+                    motorized.push(name);
+                    localStorage.setItem('motorized', JSON.stringify(motorized));
+                    // Agregar el nuevo motorizado al menú desplegable
+                    const option = document.createElement('option');
+                    option.value = name;
+                    option.textContent = name;
+                    motorizedSelect.appendChild(option);
+                }
+            }
+
+            function updateSummary(orderType, cost) {
+                let count, total;
+
+                switch (orderType) {
+                    case 'normal':
+                        count = parseInt(normalCount.textContent) + 1;
+                        total = parseFloat(normalTotal.textContent) + cost;
+                        normalCount.textContent = count;
+                        normalTotal.textContent = total.toFixed(2);
+                        break;
+                    case 'promo':
+                        count = parseInt(promoCount.textContent) + 1;
+                        total = parseFloat(promoTotal.textContent) + cost;
+                        promoCount.textContent = count;
+                        promoTotal.textContent = total.toFixed(2);
+                        break;
+                    case 'gratis':
+                        count = parseInt(gratisCount.textContent) + 1;
+                        total = parseFloat(gratisTotal.textContent) + cost;
+                        gratisCount.textContent = count;
+                        gratisTotal.textContent = total.toFixed(2);
+                        break;
+                }
+
+                // Actualizar total general
+                const totalPedido = parseFloat(totalMoney.textContent) + cost;
+                totalCount.textContent = parseInt(normalCount.textContent) + parseInt(promoCount.textContent) + parseInt(gratisCount.textContent);
+                totalMoney.textContent = totalPedido.toFixed(2);
+            }
+
+            function resetSummary() {
+                normalCount.textContent = '0';
+                promoCount.textContent = '0';
+                gratisCount.textContent = '0';
+                normalTotal.textContent = '0';
+                promoTotal.textContent = '0';
+                gratisTotal.textContent = '0';
+                totalCount.textContent = '0';
+                totalMoney.textContent = '0';
             }
         });
 
-        const totalRow = document.createElement('tr');
-        totalRow.innerHTML = `<td colspan="2">Total para ${name}:</td><td>${totalCost.toFixed(2)} C$</td><td></td>`;
-        tableBody.appendChild(totalRow);
-    }
-
-    function sendOrderToWhatsApp(reference, cash, deliveryPerson, orderType) {
-        const message = `Nuevo Pedido:\nReferencia: ${reference}\nCosto de Delivery: C$ ${cash.toFixed(2)}\nNombre de Repartidor: ${deliveryPerson}\nTipo de Pedido: ${orderType}`;
-        const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
-        window.open(whatsappUrl, '_blank');
-    }
-
-    function deleteOrder(reference) {
-        orders = orders.filter(order => order.pickup !== reference);
-        localStorage.setItem('orders', JSON.stringify(orders));
-        updateDeliveryPersonTables();
-        updateStatistics();
-    }
-
-    function calculateTotalEarnings() {
-        const totalEarnings = orders.reduce((total, order) => total + order.cash, 0);
-        alert(`Total Ganancias del Día: C$ ${totalEarnings.toFixed(2)}`);
-    }
-
-    function updateStatistics() {
-        const totalOrders = orders.length;
-        const totalEarnings = orders.reduce((total, order) => total + order.cash, 0);
-        const deliveryPersonCount = {};
-
-        orders.forEach(order => {
-            if (deliveryPersonCount[order.deliveryPersonName]) {
-                deliveryPersonCount[order.deliveryPersonName]++;
-            } else {
-                deliveryPersonCount[order.deliveryPersonName] = 1;
-            }
-        });
-
-        const mostActiveDeliveryPerson = Object.keys(deliveryPersonCount).reduce((a, b) => deliveryPersonCount[a] > deliveryPersonCount[b] ? a : b, '');
-
-        document.getElementById('totalOrders').textContent = `Total de Pedidos: ${totalOrders}`;
-        document.getElementById('totalEarnings').textContent = `Total Ganancias: ${totalEarnings.toFixed(2)} C$`;
-        document.getElementById('mostActiveDeliveryPerson').textContent = `Repartidor Más Activo: ${mostActiveDeliveryPerson || 'Ninguno'}`;
-    }
-</script>
-
+        function sendWhatsApp(motorized, reference) {
+            const message = `Nuevo pedido para el motorizado ${motorized}: Referencia ${reference}`;
+            const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
+            window.open(url, '_blank');
+        }
+    </script>
 </body>
 </html>
