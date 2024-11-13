@@ -246,6 +246,25 @@
             }
         }
 
+        // Función para cargar historial desde el localStorage
+        function cargarHistorial() {
+            const historial = JSON.parse(localStorage.getItem("historial")) || [];
+            const historialContainer = document.getElementById("historialContainer");
+            historialContainer.innerHTML = ""; // Limpiar el contenedor
+
+            historial.forEach(item => {
+                const historialItem = document.createElement("tr");
+                historialItem.innerHTML = `
+                    <td>${item.referencia}</td>
+                    <td>C$ ${item.costo}</td>
+                    <td>${item.tipo}</td>
+                    <td>${item.motorizado}</td>
+                    <td><button class="delete-button" onclick="eliminarHistorial(this)">Eliminar</button></td>
+                `;
+                historialContainer.appendChild(historialItem);
+            });
+        }
+
         // Función para registrar un delivery
         function registrarDelivery() {
             const referencia = document.getElementById("referencia").value;
@@ -271,6 +290,28 @@
             // Limpiar campos del formulario
             document.getElementById("referencia").value = '';
             document.getElementById("costo").value = '';
+        }
+
+        // Función para agregar al historial
+        function agregarHistorial(delivery, motorizado) {
+            const historial = JSON.parse(localStorage.getItem("historial")) || [];
+            historial.push({ referencia: delivery.referencia, costo: delivery.costo, tipo: delivery.tipo, motorizado: motorizado });
+            localStorage.setItem("historial", JSON.stringify(historial));
+
+            cargarHistorial(); // Recargar el historial
+        }
+
+        // Función para eliminar una fila del historial
+        function eliminarHistorial(button) {
+            const row = button.parentNode.parentNode; // Obtener la fila del botón
+            const referencia = row.cells[0].textContent; // Obtener la referencia de la fila
+            const historial = JSON.parse(localStorage.getItem("historial")) || [];
+
+            // Filtrar el historial para eliminar el registro correspondiente
+            const updatedHistorial = historial.filter(item => item.referencia !== referencia);
+            localStorage.setItem("historial", JSON.stringify(updatedHistorial));
+
+            row.parentNode.removeChild(row); // Eliminar la fila de la tabla
         }
 
         // Función para agregar un motorizado
@@ -318,28 +359,6 @@
             document.getElementById("whatsappButton").style.display = deliverySelect.value ? "block" : "none";
         }
 
-        // Función para agregar al historial
-        function agregarHistorial(delivery, motorizado) {
-            const historialContainer = document.getElementById("historialContainer");
-            const historialItem = document.createElement("tr");
-
-            historialItem.innerHTML = `
-                <td>${delivery.referencia}</td>
-                <td>C$ ${delivery.costo}</td>
-                <td>${delivery.tipo}</td>
-                <td>${motorizado}</td>
-                <td><button class="delete-button" onclick="eliminarHistorial(this)">Eliminar</button></td>
-            `;
-
-            historialContainer.appendChild(historialItem);
-        }
-
-        // Función para eliminar una fila del historial
-        function eliminarHistorial(button) {
-            const row = button.parentNode.parentNode; // Obtener la fila del botón
-            row.parentNode.removeChild(row); // Eliminar la fila de la tabla
-        }
-
         // Función para confirmar eliminación de datos
         function confirmarEliminar() {
             document.getElementById("confirmDelete").style.display = "block";
@@ -359,12 +378,13 @@
 
         // Función para limpiar el historial
         function limpiarHistorial() {
-            const historialContainer = document.getElementById("historialContainer");
-            historialContainer.innerHTML = ""; // Limpiar el historial
+            localStorage.removeItem("historial"); // Limpiar el historial en localStorage
+            cargarHistorial(); // Actualizar la visualización del historial
         }
 
-        // Cargar deliverys al iniciar
+        // Cargar deliverys y historial al iniciar
         cargarDeliverys();
+        cargarHistorial();
     </script>
 </body>
 </html>
