@@ -301,7 +301,7 @@
             cargarHistorial(); // Recargar el historial
         }
 
-        // Función para eliminar una fila del historial
+        // Función para eliminar una fila del historial y actualizar el conteo
         function eliminarHistorial(button) {
             const row = button.parentNode.parentNode; // Obtener la fila del botón
             const referencia = row.cells[0].textContent; // Obtener la referencia de la fila
@@ -311,7 +311,22 @@
             const updatedHistorial = historial.filter(item => item.referencia !== referencia);
             localStorage.setItem("historial", JSON.stringify(updatedHistorial));
 
+            // Actualizar el conteo de deliverys
+            actualizarConteoDeliverys(referencia);
+
             row.parentNode.removeChild(row); // Eliminar la fila de la tabla
+        }
+
+        // Función para actualizar el conteo de deliverys de los motorizados
+        function actualizarConteoDeliverys(referencia) {
+            const deliverys = JSON.parse(localStorage.getItem("deliverys")) || {};
+
+            for (let motorizado in deliverys) {
+                deliverys[motorizado] = deliverys[motorizado].filter(delivery => delivery.referencia !== referencia);
+            }
+
+            localStorage.setItem("deliverys", JSON.stringify(deliverys));
+            cargarDeliverys(); // Recargar deliverys para mostrar el conteo actualizado
         }
 
         // Función para agregar un motorizado
