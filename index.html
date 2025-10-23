@@ -1,269 +1,709 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Delivery Express - Registro</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f9f9f9;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      color: #333;
-    }
-    .header {
-      width: 100%;
-      background: #2196F3;
-      color: white;
-      text-align: center;
-      padding: 10px;
-    }
-    .header img { max-height: 50px; }
-    .container {
-      width: 90%;
-      max-width: 700px;
-      background: white;
-      padding: 20px;
-      margin-top: 20px;
-      border-radius: 8px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-    }
-    h1 { color:#2196F3; text-align:center; margin-bottom:20px; }
-    label { font-weight:bold; display:block; margin-top:10px; }
-    input, select, button {
-      width:100%; padding:10px; margin-top:5px;
-      border-radius:5px; border:1px solid #ccc; font-size:16px;
-    }
-    button {
-      background:#2196F3; color:white; font-weight:bold;
-      margin-top:10px; cursor:pointer;
-    }
-    button:hover { background:#1976D2; }
-    .confirm-delete {
-      display:none; background:#fff3cd; color:#856404;
-      padding:10px; border-radius:5px; margin-top:10px; text-align:center;
-    }
-    table { width:100%; border-collapse:collapse; margin-top:20px; }
-    th, td { border:1px solid #ddd; padding:8px; text-align:left; }
-    th { background:#f2f2f2; font-weight:bold; }
-    tr:hover { background:#f5f5f5; }
-    .delete-button {
-      background:#d9534f; color:white; border:none;
-      padding:5px 10px; border-radius:5px; cursor:pointer;
-    }
-    .delete-button:hover { background:#c9302c; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delivery Express - Registro de Delivery</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #333;
+        }
+        .header {
+            width: 100%;
+            background-color: #2196F3;
+            color: white;
+            padding: 10px 0;
+            text-align: center;
+        }
+        .header img {
+            max-height: 50px;
+        }
+        .container {
+            width: 90%;
+            max-width: 1000px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        h1, h2 {
+            color: #2196F3;
+            text-align: center;
+        }
+        label {
+            font-weight: bold;
+            color: #555;
+            margin-top: 10px;
+            display: block;
+        }
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+        button {
+            background-color: #2196F3;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #1976D2;
+        }
+        .confirm-delete {
+            display: none;
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            text-align: center;
+        }
+        .historial-table, .dashboard-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            text-align: left;
+        }
+        .historial-table th, .historial-table td, .dashboard-table th, .dashboard-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        .historial-table th, .dashboard-table th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        .historial-table tr:hover, .dashboard-table tr:hover {
+            background-color: #f5f5f5;
+        }
+        .delete-button {
+            background-color: #d9534f;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .delete-button:hover {
+            background-color: #c9302c;
+        }
+        #showSummaryButton {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-top: 10px;
+            width: 100%;
+        }
+        #showSummaryButton:hover {
+            background-color: #45a049;
+        }
+        .dashboard {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f0f8ff;
+            border-radius: 8px;
+            border: 1px solid #d1e8ff;
+        }
+        .dashboard h2 {
+            margin-top: 0;
+        }
+        .dashboard-card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 10px;
+            margin: 10px 0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .dashboard-card h3 {
+            margin: 0 0 10px 0;
+            color: #2196F3;
+        }
+        .dashboard-card p {
+            margin: 5px 0;
+        }
+        .arqueo-total {
+            margin-top: 30px;
+            padding: 15px;
+            background-color: #e8f5e9;
+            border-radius: 8px;
+            border: 1px solid #a5d6a7;
+            width: 100%;
+            max-width: 1000px;
+        }
+        .arqueo-total h2 {
+            margin-top: 0;
+            color: #2e7d32;
+        }
+        .arqueo-total p {
+            font-size: 16px;
+            margin: 8px 0;
+        }
+        .arqueo-total .total-general {
+            font-weight: bold;
+            font-size: 18px;
+            color: #2e7d32;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 800px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover {
+            color: black;
+        }
+        .modal-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .modal-table th, .modal-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .modal-table th {
+            background-color: #f2f2f2;
+        }
+        .hint {
+            display: block;
+            margin-top: 4px;
+            color: #666;
+            font-style: italic;
+            font-size: 14px;
+        }
+        /* Estilo para autocompletar */
+        #suggestions {
+            border: 1px solid #ccc;
+            border-top: none;
+            max-height: 150px;
+            overflow-y: auto;
+            background: white;
+            z-index: 10;
+            position: absolute;
+            width: calc(90% - 40px);
+            max-width: 960px;
+        }
+        #suggestions div {
+            padding: 8px;
+            cursor: pointer;
+        }
+        #suggestions div:hover {
+            background-color: #e9e9e9;
+        }
+    </style>
 </head>
 <body>
-  <div class="header">
-    <img src="logo.jpg" alt="Logo Delivery Express">
-  </div>
+    <div class="header">
+        <img src="logo.jpg" alt="Logo Delivery Express">
+    </div>
+    <div class="container">
+        <h1>Registro de Delivery</h1>
 
-  <div class="container">
-    <h1>Registro de Delivery</h1>
+        <div class="dashboard">
+            <h2>Rendimiento de Motorizados</h2>
+            <div id="dashboardContainer"></div>
+        </div>
 
-    <label>Referencia:</label>
-    <input type="text" id="referencia">
+        <div style="position: relative;">
+            <label>Referencia:</label>
+            <input type="text" id="referencia" placeholder="Referencia del delivery">
+            <small class="hint">Ej: Número de pedido, nombre del cliente o dirección</small>
 
-    <label>Costo del Delivery (C$):</label>
-    <input type="number" id="costo">
+            <label>Dirección o dónde ir:</label>
+            <input type="text" id="direccionInput" list="direccionesList" placeholder="Escribe o selecciona una dirección">
+            <datalist id="direccionesList">
+                <option value="Casa">
+                <option value="Oficina">
+                <option value="Restaurante Central">
+                <option value="Plaza Inter">
+                <option value="Centro Comercial Metrocentro">
+                <option value="Universidad Nacional Autónoma">
+                <option value="Hospital Bautista">
+                <option value="Otro">
+            </datalist>
 
-    <label>Motorizado:</label>
-    <select id="motorizadoSelect">
-      <option value="">-- Selecciona --</option>
-    </select>
-    <input type="text" id="nuevoMotorizado" placeholder="Agregar nuevo motorizado">
-    <button onclick="agregarMotorizado()">Agregar Motorizado</button>
+            <label>Costo del Delivery (C$):</label>
+            <input type="number" id="costo" placeholder="Costo en C$">
 
-    <label>Tipo de Entrega:</label>
-    <select id="tipoDelivery">
-      <option value="Normal">Normal</option>
-      <option value="Promo">Promo</option>
-      <option value="Gratis">Gratis</option>
-    </select>
+            <label>Seleccionar Motorizado:</label>
+            <select id="motorizadoSelect">
+                <option value="">-- Selecciona un Motorizado --</option>
+            </select>
 
-    <label>Fecha:</label>
-    <input type="date" id="fecha">
+            <label>Agregar nuevo motorizado:</label>
+            <input type="text" id="nuevoMotorizado" placeholder="Escribe o selecciona">
+            <div id="suggestions"></div>
 
-    <button onclick="registrarDelivery()">Registrar Delivery</button>
+            <button id="agregarMotorizadoBtn">Agregar Motorizado</button>
 
-    <label>Seleccionar Delivery para enviar:</label>
-    <select id="deliverySelect" onchange="mostrarBotonWhatsApp()">
-      <option value="">-- Selecciona --</option>
-    </select>
-    <button id="whatsappButton" onclick="enviarWhatsApp()" style="display:none;">Enviar por WhatsApp</button>
+            <label>Tipo de Delivery:</label>
+            <select id="tipoDelivery">
+                <option value="Normal">Delivery Normal</option>
+                <option value="Promo">Delivery Promo</option>
+                <option value="Gratis">Delivery Gratis</option>
+            </select>
 
-    <div class="confirm-delete" id="confirmDelete">
-      <p>¿Eliminar todos los registros?</p>
-      <button onclick="limpiarDeliverys()">Sí</button>
-      <button onclick="cancelarEliminar()">No</button>
+            <button id="registrarDeliveryBtn">Registrar Delivery</button>
+
+            <label>Seleccionar Delivery para enviar:</label>
+            <select id="deliverySelect">
+                <option value="">-- Selecciona un Delivery --</option>
+            </select>
+
+            <button id="whatsappButton" style="display:none;">Enviar por WhatsApp</button>
+        </div>
+
+        <div class="confirm-delete" id="confirmDelete">
+            <p>¿Está seguro de eliminar todos los registros?</p>
+            <button id="limpiarDeliverysBtn">Sí</button>
+            <button id="cancelarEliminarBtn">No</button>
+        </div>
+
+        <div class="historial" id="historial">
+            <h2>Historial de Deliverys</h2>
+            <table class="historial-table" id="historialTable">
+                <thead>
+                    <tr>
+                        <th>Referencia</th>
+                        <th>Costo</th>
+                        <th>Tipo</th>
+                        <th>Motorizado</th>
+                        <th>Dirección</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="historialContainer"></tbody>
+            </table>
+        </div>
+
+        <button id="confirmarEliminarBtn">Limpiar Todos los Deliverys</button>
+        <button id="limpiarHistorialBtn">Limpiar Historial</button>
+        <button id="showSummaryButton">Mostrar Resumen del Día</button>
     </div>
 
-    <h2>Historial de Entregas</h2>
-    <button onclick="exportarExcel()">📊 Exportar a Excel</button>
-    <button onclick="imprimirHistorial()">🖨 Imprimir</button>
-    <input type="text" id="buscar" placeholder="Buscar en historial..." onkeyup="filtrarHistorial()">
+    <div id="summaryModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Resumen de Deliverys</h2>
+            <h3>Fecha: <span id="modalFecha"></span></h3>
 
-    <table id="historialTable">
-      <thead>
-        <tr>
-          <th>Referencia</th><th>Costo</th><th>Tipo</th><th>Motorizado</th><th>Fecha</th><th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody id="historialContainer"></tbody>
-    </table>
+            <h3>Arqueo Total</h3>
+            <p><strong>Total Deliverys Normales:</strong> <span id="modalTotalNormalCount">0</span> (C$ <span id="modalTotalNormalAmount">0.00</span>)</p>
+            <p><strong>Total Deliverys Promo:</strong> <span id="modalTotalPromoCount">0</span> (C$ <span id="modalTotalPromoAmount">0.00</span>)</p>
+            <p><strong>Total Deliverys Gratis:</strong> <span id="modalTotalGratisCount">0</span> (C$ <span id="modalTotalGratisAmount">0.00</span>)</p>
+            <p class="total-general"><strong>Total General:</strong> C$ <span id="modalTotalGeneralAmount">0.00</span></p>
 
-    <button onclick="confirmarEliminar()">Limpiar Todos los Deliverys</button>
-    <button onclick="limpiarHistorial()">Limpiar Historial</button>
-  </div>
+            <h3>Resumen por Turno</h3>
+            <p><strong>Mañana (6:00–13:59):</strong> <span id="modalTurnoManana">0</span> entregas</p>
+            <p><strong>Tarde (14:00–19:59):</strong> <span id="modalTurnoTarde">0</span> entregas</p>
+            <p><strong>Noche (20:00–5:59):</strong> <span id="modalTurnoNoche">0</span> entregas</p>
 
-  <!-- SheetJS para exportar Excel -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+            <h3>Detalle por Motorizado</h3>
+            <div id="modalMotorizadosData"></div>
+        </div>
+    </div>
 
-  <script>
-    // ====== Cargar inicial ======
-    document.addEventListener("DOMContentLoaded", ()=>{
-      cargarDeliverys();
-      cargarHistorial();
-      document.getElementById("fecha").valueAsDate = new Date(); // Fecha automática
-    });
+    <div class="arqueo-total">
+        <h2>Arqueo Total de Pedidos</h2>
+        <p><strong>Total Deliverys Normales:</strong> <span id="totalNormalCount">0</span> (C$ <span id="totalNormalAmount">0.00</span>)</p>
+        <p><strong>Total Deliverys Promo:</strong> <span id="totalPromoCount">0</span> (C$ <span id="totalPromoAmount">0.00</span>)</p>
+        <p><strong>Total Deliverys Gratis:</strong> <span id="totalGratisCount">0</span> (C$ <span id="totalGratisAmount">0.00</span>)</p>
+        <p class="total-general"><strong>Total General:</strong> C$ <span id="totalGeneralAmount">0.00</span></p>
+    </div>
 
-    function cargarDeliverys(){
-      const entregas = JSON.parse(localStorage.getItem("entregas")) || {};
-      const motorizadoSelect = document.getElementById("motorizadoSelect");
-      motorizadoSelect.innerHTML = '<option value="">-- Selecciona --</option>';
-      const deliverySelect = document.getElementById("deliverySelect");
-      deliverySelect.innerHTML = '<option value="">-- Selecciona --</option>';
+    <script>
+        let totalNormalCount = 0, totalPromoCount = 0, totalGratisCount = 0;
+        let totalNormalAmount = 0, totalPromoAmount = 0, totalGratisAmount = 0;
 
-      for(let motorizado in entregas){
-        let option = document.createElement("option");
-        option.value = motorizado;
-        option.textContent = motorizado;
-        motorizadoSelect.appendChild(option);
+        document.addEventListener("DOMContentLoaded", function() {
+            const nuevoMotorizadoInput = document.getElementById("nuevoMotorizado");
+            const suggestionsDiv = document.getElementById("suggestions");
 
-        entregas[motorizado].forEach((entrega,i)=>{
-          let op = document.createElement("option");
-          op.value = motorizado+"|"+i;
-          op.textContent = `${entrega.referencia} - C$${entrega.costo} (${entrega.tipo})`;
-          deliverySelect.appendChild(op);
+            // Autocompletar motorizados
+            nuevoMotorizadoInput.addEventListener("input", function() {
+                const query = this.value.toLowerCase();
+                suggestionsDiv.innerHTML = "";
+                if (!query) return;
+
+                const deliverys = JSON.parse(localStorage.getItem("deliverys")) || {};
+                const motorizados = Object.keys(deliverys);
+                const matches = motorizados.filter(m => m.toLowerCase().includes(query));
+
+                matches.forEach(m => {
+                    const div = document.createElement("div");
+                    div.textContent = m;
+                    div.onclick = () => {
+                        nuevoMotorizadoInput.value = m;
+                        suggestionsDiv.innerHTML = "";
+                    };
+                    suggestionsDiv.appendChild(div);
+                });
+            });
+
+            // Cerrar sugerencias al hacer clic fuera
+            document.addEventListener("click", (e) => {
+                if (!nuevoMotorizadoInput.contains(e.target) && !suggestionsDiv.contains(e.target)) {
+                    suggestionsDiv.innerHTML = "";
+                }
+            });
+
+            // Eventos
+            document.getElementById("agregarMotorizadoBtn").addEventListener("click", agregarMotorizado);
+            document.getElementById("registrarDeliveryBtn").addEventListener("click", registrarDelivery);
+            document.getElementById("confirmarEliminarBtn").addEventListener("click", confirmarEliminar);
+            document.getElementById("limpiarDeliverysBtn").addEventListener("click", limpiarDeliverys);
+            document.getElementById("cancelarEliminarBtn").addEventListener("click", cancelarEliminar);
+            document.getElementById("limpiarHistorialBtn").addEventListener("click", limpiarHistorial);
+            document.getElementById("showSummaryButton").addEventListener("click", mostrarResumenDelDia);
+            document.getElementById("whatsappButton").addEventListener("click", enviarWhatsApp);
+            document.getElementById("deliverySelect").addEventListener("change", mostrarBotonWhatsApp);
+
+            // Modal
+            const modal = document.getElementById("summaryModal");
+            const span = document.getElementsByClassName("close")[0];
+            span.onclick = () => modal.style.display = "none";
+            window.onclick = (e) => { if (e.target == modal) modal.style.display = "none"; };
+
+            // Función para obtener hora local de Nicaragua
+            function getHoraNicaragua() {
+                const now = new Date();
+                const options = { 
+                    timeZone: 'America/Managua', 
+                    hour: '2-digit', 
+                    minute: '2-digit',
+                    hour12: false 
+                };
+                return new Intl.DateTimeFormat('es-ES', options).format(now);
+            }
+
+            // Función para determinar turno
+            function getTurno(horaStr) {
+                const [hora, min] = horaStr.split(':').map(Number);
+                if (hora >= 6 && hora < 14) return "mañana";
+                if (hora >= 14 && hora < 20) return "tarde";
+                return "noche"; // 20:00 a 5:59
+            }
+
+            function actualizarArqueoTotal() {
+                document.getElementById("totalNormalCount").textContent = totalNormalCount;
+                document.getElementById("totalNormalAmount").textContent = totalNormalAmount.toFixed(2);
+                document.getElementById("totalPromoCount").textContent = totalPromoCount;
+                document.getElementById("totalPromoAmount").textContent = totalPromoAmount.toFixed(2);
+                document.getElementById("totalGratisCount").textContent = totalGratisCount;
+                document.getElementById("totalGratisAmount").textContent = totalGratisAmount.toFixed(2);
+                document.getElementById("totalGeneralAmount").textContent = (totalNormalAmount + totalPromoAmount + totalGratisAmount).toFixed(2);
+            }
+
+            function cargarDashboard() {
+                const deliverys = JSON.parse(localStorage.getItem("deliverys")) || {};
+                const dashboardContainer = document.getElementById("dashboardContainer");
+
+                totalNormalCount = 0; totalPromoCount = 0; totalGratisCount = 0;
+                totalNormalAmount = 0; totalPromoAmount = 0; totalGratisAmount = 0;
+
+                if (dashboardContainer) {
+                    dashboardContainer.innerHTML = "";
+                    for (let motorizado in deliverys) {
+                        const deliverysMotorizado = deliverys[motorizado];
+                        let normalCount = 0, promoCount = 0, gratisCount = 0;
+                        let normalTotal = 0, promoTotal = 0, gratisTotal = 0;
+
+                        deliverysMotorizado.forEach(delivery => {
+                            if (delivery.tipo === "Normal") {
+                                normalCount++;
+                                normalTotal += delivery.costo;
+                            } else if (delivery.tipo === "Promo") {
+                                promoCount++;
+                                promoTotal += delivery.costo;
+                            } else if (delivery.tipo === "Gratis") {
+                                gratisCount++;
+                                gratisTotal += delivery.costo;
+                            }
+                        });
+
+                        totalNormalCount += normalCount;
+                        totalPromoCount += promoCount;
+                        totalGratisCount += gratisCount;
+                        totalNormalAmount += normalTotal;
+                        totalPromoAmount += promoTotal;
+                        totalGratisAmount += gratisTotal;
+
+                        const totalDeliverys = normalCount + promoCount + gratisCount;
+                        const totalRecaudado = normalTotal + promoTotal + gratisTotal;
+
+                        const card = document.createElement("div");
+                        card.className = "dashboard-card";
+                        card.innerHTML = `
+                            <h3>${motorizado}</h3>
+                            <p><strong>Total de Deliverys:</strong> ${totalDeliverys}</p>
+                            <p><strong>Total Recaudado:</strong> C$ ${totalRecaudado.toFixed(2)}</p>
+                            <p><strong>Normal:</strong> ${normalCount} (C$ ${normalTotal.toFixed(2)})</p>
+                            <p><strong>Promo:</strong> ${promoCount} (C$ ${promoTotal.toFixed(2)})</p>
+                            <p><strong>Gratis:</strong> ${gratisCount} (C$ ${gratisTotal.toFixed(2)})</p>
+                        `;
+                        dashboardContainer.appendChild(card);
+                    }
+                    actualizarArqueoTotal();
+                }
+            }
+
+            function cargarDeliverys() {
+                const deliverys = JSON.parse(localStorage.getItem("deliverys")) || {};
+                const deliverySelect = document.getElementById("deliverySelect");
+                deliverySelect.innerHTML = '<option value="">-- Selecciona un Delivery --</option>';
+                for (let motorizado in deliverys) {
+                    deliverys[motorizado].forEach((delivery, index) => {
+                        const option = document.createElement("option");
+                        option.value = `${motorizado}|${index}`;
+                        option.textContent = `${delivery.referencia} - C$ ${delivery.costo} (${delivery.tipo})`;
+                        deliverySelect.appendChild(option);
+                    });
+                }
+
+                const motorizadoSelect = document.getElementById("motorizadoSelect");
+                motorizadoSelect.innerHTML = '<option value="">-- Selecciona un Motorizado --</option>';
+                for (let motorizado in deliverys) {
+                    const option = document.createElement("option");
+                    option.value = motorizado;
+                    option.textContent = motorizado;
+                    motorizadoSelect.appendChild(option);
+                }
+                cargarDashboard();
+            }
+
+            function cargarHistorial() {
+                const historial = JSON.parse(localStorage.getItem("historial")) || [];
+                const historialContainer = document.getElementById("historialContainer");
+                if (historialContainer) {
+                    historialContainer.innerHTML = "";
+                    historial.forEach(item => {
+                        const refHora = `${item.referencia} — ${item.hora}`;
+                        const row = document.createElement("tr");
+                        row.innerHTML = `
+                            <td>${refHora}</td>
+                            <td>C$ ${item.costo}</td>
+                            <td>${item.tipo}</td>
+                            <td>${item.motorizado}</td>
+                            <td>${item.direccion}</td>
+                            <td><button class="delete-button" onclick="eliminarHistorial(this)">Eliminar</button></td>
+                        `;
+                        historialContainer.appendChild(row);
+                    });
+                }
+            }
+
+            function registrarDelivery() {
+                const referencia = document.getElementById("referencia").value;
+                const costo = parseFloat(document.getElementById("costo").value);
+                const motorizado = document.getElementById("motorizadoSelect").value || document.getElementById("nuevoMotorizado").value;
+                const tipoDelivery = document.getElementById("tipoDelivery").value;
+                const direccion = document.getElementById("direccionInput").value.trim();
+
+                if (!referencia || isNaN(costo) || !motorizado || !tipoDelivery || !direccion) {
+                    alert("Complete todos los campos.");
+                    return;
+                }
+
+                // Obtener hora en Nicaragua
+                const hora = getHoraNicaragua();
+
+                const delivery = { referencia, costo, tipo: tipoDelivery, hora, direccion };
+                const deliverys = JSON.parse(localStorage.getItem("deliverys")) || {};
+                if (!deliverys[motorizado]) deliverys[motorizado] = [];
+                deliverys[motorizado].push(delivery);
+                localStorage.setItem("deliverys", JSON.stringify(deliverys));
+
+                cargarDeliverys();
+                agregarHistorial(delivery, motorizado);
+
+                // Limpiar
+                document.getElementById("referencia").value = '';
+                document.getElementById("costo").value = '';
+                document.getElementById("nuevoMotorizado").value = '';
+                document.getElementById("direccionInput").value = '';
+            }
+
+            function agregarHistorial(delivery, motorizado) {
+                const historial = JSON.parse(localStorage.getItem("historial")) || [];
+                historial.push({ ...delivery, motorizado });
+                localStorage.setItem("historial", JSON.stringify(historial));
+                cargarHistorial();
+            }
+
+            window.eliminarHistorial = function(btn) {
+                const row = btn.closest("tr");
+                const refHora = row.cells[0].textContent;
+                const referencia = refHora.split(' — ')[0];
+                let historial = JSON.parse(localStorage.getItem("historial")) || [];
+                historial = historial.filter(item => item.referencia !== referencia);
+                localStorage.setItem("historial", JSON.stringify(historial));
+                actualizarConteoDeliverys(referencia);
+                row.remove();
+            };
+
+            function actualizarConteoDeliverys(referencia) {
+                const deliverys = JSON.parse(localStorage.getItem("deliverys")) || {};
+                for (let m in deliverys) {
+                    deliverys[m] = deliverys[m].filter(d => d.referencia !== referencia);
+                    if (deliverys[m].length === 0) delete deliverys[m];
+                }
+                localStorage.setItem("deliverys", JSON.stringify(deliverys));
+                cargarDeliverys();
+            }
+
+            function agregarMotorizado() {
+                const nombre = document.getElementById("nuevoMotorizado").value.trim();
+                if (!nombre) {
+                    alert("Ingrese un nombre de motorizado.");
+                    return;
+                }
+                const deliverys = JSON.parse(localStorage.getItem("deliverys")) || {};
+                if (deliverys[nombre]) {
+                    alert("Este motorizado ya existe.");
+                    return;
+                }
+                deliverys[nombre] = [];
+                localStorage.setItem("deliverys", JSON.stringify(deliverys));
+                alert("Motorizado agregado.");
+                document.getElementById("nuevoMotorizado").value = "";
+                cargarDeliverys();
+            }
+
+            function enviarWhatsApp() {
+                const val = document.getElementById("deliverySelect").value;
+                if (!val) return alert("Seleccione un delivery.");
+                const [motorizado, idx] = val.split('|');
+                const deliverys = JSON.parse(localStorage.getItem("deliverys")) || {};
+                const d = deliverys[motorizado][idx];
+                const msg = `Nuevo Delivery:\nReferencia: ${d.referencia}\nHora (Nicaragua): ${d.hora}\nDirección: ${d.direccion}\nCosto: C$ ${d.costo}\nMotorizado: ${motorizado}\nTipo: ${d.tipo}`;
+                window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+            }
+
+            function mostrarBotonWhatsApp() {
+                document.getElementById("whatsappButton").style.display = this.value ? "block" : "none";
+            }
+
+            function confirmarEliminar() {
+                document.getElementById("confirmDelete").style.display = "block";
+            }
+
+            function cancelarEliminar() {
+                document.getElementById("confirmDelete").style.display = "none";
+            }
+
+            function limpiarDeliverys() {
+                localStorage.removeItem("deliverys");
+                document.getElementById("confirmDelete").style.display = "none";
+                cargarDeliverys();
+            }
+
+            function limpiarHistorial() {
+                localStorage.removeItem("historial");
+                cargarHistorial();
+            }
+
+            function mostrarResumenDelDia() {
+                const deliverys = JSON.parse(localStorage.getItem("deliverys")) || {};
+                const modal = document.getElementById("summaryModal");
+                document.getElementById("modalFecha").textContent = new Date().toLocaleDateString();
+
+                // Totales generales
+                document.getElementById("modalTotalNormalCount").textContent = totalNormalCount;
+                document.getElementById("modalTotalNormalAmount").textContent = totalNormalAmount.toFixed(2);
+                document.getElementById("modalTotalPromoCount").textContent = totalPromoCount;
+                document.getElementById("modalTotalPromoAmount").textContent = totalPromoAmount.toFixed(2);
+                document.getElementById("modalTotalGratisCount").textContent = totalGratisCount;
+                document.getElementById("modalTotalGratisAmount").textContent = totalGratisAmount.toFixed(2);
+                document.getElementById("modalTotalGeneralAmount").textContent = (totalNormalAmount + totalPromoAmount + totalGratisAmount).toFixed(2);
+
+                // Turnos
+                let manana = 0, tarde = 0, noche = 0;
+                for (let m in deliverys) {
+                    deliverys[m].forEach(d => {
+                        const turno = getTurno(d.hora);
+                        if (turno === "mañana") manana++;
+                        else if (turno === "tarde") tarde++;
+                        else noche++;
+                    });
+                }
+                document.getElementById("modalTurnoManana").textContent = manana;
+                document.getElementById("modalTurnoTarde").textContent = tarde;
+                document.getElementById("modalTurnoNoche").textContent = noche;
+
+                // Detalle por motorizado
+                const modalMotorizadosData = document.getElementById("modalMotorizadosData");
+                modalMotorizadosData.innerHTML = "";
+                for (let motorizado in deliverys) {
+                    const ds = deliverys[motorizado];
+                    let normalCount = 0, promoCount = 0, gratisCount = 0;
+                    let normalTotal = 0, promoTotal = 0, gratisTotal = 0;
+                    ds.forEach(d => {
+                        if (d.tipo === "Normal") { normalCount++; normalTotal += d.costo; }
+                        else if (d.tipo === "Promo") { promoCount++; promoTotal += d.costo; }
+                        else if (d.tipo === "Gratis") { gratisCount++; gratisTotal += d.costo; }
+                    });
+                    const totalDeliverys = normalCount + promoCount + gratisCount;
+                    const totalRecaudado = normalTotal + promoTotal + gratisTotal;
+
+                    const div = document.createElement("div");
+                    div.innerHTML = `
+                        <h4>${motorizado}</h4>
+                        <p><strong>Total:</strong> ${totalDeliverys} — C$ ${totalRecaudado.toFixed(2)}</p>
+                        <table class="modal-table">
+                            <thead><tr><th>Referencia</th><th>Costo</th><th>Tipo</th><th>Dirección</th></tr></thead>
+                            <tbody>
+                                ${ds.map(d => `<tr><td>${d.referencia} — ${d.hora}</td><td>C$ ${d.costo}</td><td>${d.tipo}</td><td>${d.direccion}</td></tr>`).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                    modalMotorizadosData.appendChild(div);
+                }
+
+                modal.style.display = "block";
+            }
+
+            cargarDeliverys();
+            cargarHistorial();
         });
-      }
-    }
-
-    function cargarHistorial(){
-      const historial = JSON.parse(localStorage.getItem("historial")) || [];
-      const tbody = document.getElementById("historialContainer");
-      tbody.innerHTML = "";
-      historial.forEach(item=>{
-        let tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${item.referencia}</td>
-          <td>C$${item.costo}</td>
-          <td>${item.tipo}</td>
-          <td>${item.motorizado}</td>
-          <td>${item.fecha}</td>
-          <td><button class="delete-button" onclick="confirmarEliminarFila(this)">Eliminar</button></td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-
-    function registrarDelivery(){
-      let referencia = document.getElementById("referencia").value.trim();
-      let costo = parseFloat(document.getElementById("costo").value);
-      let motorizado = document.getElementById("motorizadoSelect").value;
-      let tipo = document.getElementById("tipoDelivery").value;
-      let fecha = document.getElementById("fecha").value;
-
-      if(!referencia || isNaN(costo) || !motorizado){ alert("Completa todos los campos"); return; }
-
-      let entregas = JSON.parse(localStorage.getItem("entregas")) || {};
-      if(!entregas[motorizado]) entregas[motorizado]=[];
-      let entrega = {referencia,costo,tipo,fecha};
-      entregas[motorizado].push(entrega);
-      localStorage.setItem("entregas",JSON.stringify(entregas));
-
-      let historial = JSON.parse(localStorage.getItem("historial")) || [];
-      historial.push({referencia,costo,tipo,motorizado,fecha});
-      localStorage.setItem("historial",JSON.stringify(historial));
-
-      cargarDeliverys();
-      cargarHistorial();
-
-      document.getElementById("referencia").value="";
-      document.getElementById("costo").value="";
-    }
-
-    function agregarMotorizado(){
-      let nuevo = document.getElementById("nuevoMotorizado").value.trim();
-      if(!nuevo){ alert("Ingrese un nombre"); return; }
-      let entregas = JSON.parse(localStorage.getItem("entregas")) || {};
-      if(!entregas[nuevo]) entregas[nuevo]=[];
-      localStorage.setItem("entregas",JSON.stringify(entregas));
-      document.getElementById("nuevoMotorizado").value="";
-      cargarDeliverys();
-    }
-
-    function enviarWhatsApp(){
-      let sel = document.getElementById("deliverySelect").value;
-      if(!sel){ alert("Seleccione un delivery"); return; }
-      let [motorizado,i] = sel.split("|");
-      let entregas = JSON.parse(localStorage.getItem("entregas")) || {};
-      let d = entregas[motorizado][i];
-      let msg = `Nuevo Delivery:%0ARef: ${d.referencia}%0ACosto: C$${d.costo}%0AMotorizado: ${motorizado}%0ATipo: ${d.tipo}%0AFecha: ${d.fecha}`;
-      window.open("https://wa.me/?text="+msg,"_blank");
-    }
-
-    function mostrarBotonWhatsApp(){
-      document.getElementById("whatsappButton").style.display =
-        document.getElementById("deliverySelect").value ? "block":"none";
-    }
-
-    function confirmarEliminar(){ document.getElementById("confirmDelete").style.display="block"; }
-    function cancelarEliminar(){ document.getElementById("confirmDelete").style.display="none"; }
-    function limpiarDeliverys(){
-      localStorage.removeItem("entregas");
-      document.getElementById("confirmDelete").style.display="none";
-      cargarDeliverys();
-    }
-    function limpiarHistorial(){ localStorage.removeItem("historial"); cargarHistorial(); }
-
-    function confirmarEliminarFila(btn){
-      if(confirm("¿Seguro de eliminar este registro?")){
-        let ref = btn.parentNode.parentNode.cells[0].textContent;
-        let historial = JSON.parse(localStorage.getItem("historial")) || [];
-        historial = historial.filter(h=>h.referencia!==ref);
-        localStorage.setItem("historial",JSON.stringify(historial));
-        cargarHistorial();
-      }
-    }
-
-    function exportarExcel(){
-      let historial = JSON.parse(localStorage.getItem("historial")) || [];
-      let ws = XLSX.utils.json_to_sheet(historial);
-      let wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb,ws,"Historial");
-      XLSX.writeFile(wb,"HistorialDelivery.xlsx");
-    }
-
-    function imprimirHistorial(){
-      let div = document.getElementById("historialTable").outerHTML;
-      let w = window.open("");
-      w.document.write("<h1>Historial de Deliveries</h1>"+div);
-      w.print();
-    }
-
-    function filtrarHistorial(){
-      let filtro = document.getElementById("buscar").value.toLowerCase();
-      let filas = document.querySelectorAll("#historialContainer tr");
-      filas.forEach(f=>{
-        f.style.display = f.innerText.toLowerCase().includes(filtro) ? "" : "none";
-      });
-    }
-  </script>
+    </script>
 </body>
 </html>
